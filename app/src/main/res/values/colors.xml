@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="action_color">#00B0FF</color>
+
+    <color name="background_light_1">#FFFFFF</color>
+    <color name="background_light_2">#F8F8F8</color>
+
+    <color name="cyan_dark_1">#0099E0</color>
+    <color name="cyan_dark_2">#00A7F5</color>
+    <color name="cyan_light_1">#70D2FF</color>
+    <color name="cyan_light_2">#99DFFF</color>
+    <color name="cyan_light_3">#00A7F5</color>
+    <color name="cyan_light_4">#00A7F5</color>
+
+    <color name="coral_color">#FF7A7A</color>
+
+    <color name="coral_dark_1">#FF6F5C</color>
+    <color name="coral_dark_2">#FF8170</color>
+    <color name="coral_light_1">#FFA599</color>
+    <color name="coral_light_2">#FFB7AD</color>
+    <color name="coral_light_3">#FFC9C2</color>
+    <color name="text_color">#4B4D53</color>
+    <color name="gray0">#F1F2F4</color>
+    <color name="gray1">#E7E8E9</color>
+    <color name="gray2">#CCCED1</color>
+    <color name="gray3">#B1B3B9</color>
+    <color name="gray4">#9799A1</color>
+    <color name="gray5">#7C7F88</color>
+    <color name="black1">#1B1B1D</color>
+    <color name="icon_relleno_1">#00CCFF</color>
+    <color name="icon_relleno_2">#054DFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="shimmer_start">#F4F4F4</color>
+    <color name="shimmer_end">#E6E6E6</color>
+    <color name="color_green">#1CCF78</color>
+    <color name="color_standby">#FFCC1E</color>
+</resources>
