@@ -17,6 +17,9 @@ import com.ramotion.circlemenu.CircleMenuView
 import com.sebaudracco.aguasdelrey.databinding.FragmentHomeBinding
 import com.sebaudracco.aguasdelrey.ui.home.ui.gallery.GalleryFragment
 import com.sebaudracco.aguasdelrey.ui.home.ui.slideshow.SlideshowFragment
+import com.sebaudracco.aguasdelrey.ui.map.MapsActivity
+import com.sebaudracco.aguasdelrey.ui.route.RouteActivity
+import com.sebaudracco.aguasdelrey.ui.sync.SyncActivity
 
 
 class HomeFragment : Fragment() {
@@ -75,33 +78,19 @@ class HomeFragment : Fragment() {
                 Log.d("D", "onButtonClickAnimationEnd| index: $index")
 
                 when (index) {
-                    0 -> {
-                      //  val intent = Intent().setClass(context!!, GalleryFragment::class.java)
-                      //  startActivity(intent)
-                        val fm: FragmentManager? = fragmentManager
-                        val ft: FragmentTransaction = fm!!.beginTransaction()
-                        val llf = GalleryFragment()
-                      //  ft.replace(R.id.list_container, llf)
-                        ft.commit()
+                    0 -> {// REPARTO
+                        val intent = Intent().setClass(context!!, RouteActivity::class.java)
+                        startActivity(intent)
+
                     }
-                    1 -> {
-                     //   val intent = Intent().setClass(context!!, SlideshowFragment::class.java)
-                     //   startActivity(intent)
-                        val fm: FragmentManager? = fragmentManager
-                        val ft: FragmentTransaction = fm!!.beginTransaction()
-                        val llf = SlideshowFragment()
-                        //  ft.replace(R.id.list_container, llf)
-                        ft.commit()
+                    1 -> {// Sync
+                        val intent = Intent().setClass(context!!, SyncActivity::class.java)
+                        startActivity(intent)
                     }
 
-                    2 -> {
-                      //  val intent = Intent().setClass(context!!, GalleryFragment::class.java)
-                      //  startActivity(intent)
-                        val fm: FragmentManager? = fragmentManager
-                        val ft: FragmentTransaction = fm!!.beginTransaction()
-                        val llf = GalleryFragment()
-                        //  ft.replace(R.id.list_container, llf)
-                        ft.commit()
+                    2 -> {//GPS
+                        val intent = Intent().setClass(context!!, MapsActivity::class.java)
+                        startActivity(intent)
                     }
                 }
             }
