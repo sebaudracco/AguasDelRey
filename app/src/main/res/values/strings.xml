@@ -18,7 +18,7 @@
     <string name="action_settings">Configuración</string>
 
     <string name="menu_home">Sincronizar ruta</string>
-    <string name="menu_gallery">Contactos</string>
-    <string name="menu_slideshow">Estadísticas</string>
+    <string name="menu_gallery">Reparto</string>
+    <string name="menu_slideshow">Mostrar ruta</string>
     <string name="dialog_receiving_data_title">Aguarde un momento por favor</string>
 </resources>

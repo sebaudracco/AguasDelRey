@@ -44,35 +44,26 @@ class HomeActivity : AppCompatActivity() {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
+            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
         showLoadingDialog()
         Handler(Looper.getMainLooper()).postDelayed({
             dialog.dismiss()
-        }, 7000)
+        }, 5000)
 
     }
 
     private fun showLoadingDialog() {
         if (!::dialog.isInitialized) {
-
             val builder = AlertDialog.Builder(this)
-
             val view = LayoutInflater.from(this).inflate(R.layout.dialog_receiving_data, null)
             builder.setView(view)
-
             builder.setCancelable(false)
-
             dialog = builder.create()
-
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) }
         dialog.show()
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

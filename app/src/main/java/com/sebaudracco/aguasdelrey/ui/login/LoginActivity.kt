@@ -66,7 +66,7 @@ class LoginActivity : AppCompatActivity() {
 
             //Complete and destroy login activity once successful
             // finish()
-            openHomeActivity(loginResult.success)
+            openHomeActivity(username)
         })
 
         username.afterTextChanged {
@@ -102,9 +102,9 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun openHomeActivity(success: LoggedInUserView?) {
+    private fun openHomeActivity(success: EditText) {
         val intent = Intent().setClass(this, HomeActivity::class.java)
-        intent.putExtra(Constants.EXTRA_USER_ID, success!!.displayName)
+        intent.putExtra(Constants.EXTRA_USER_ID, success.toString())
         startActivity(intent)
         finish()
     }
