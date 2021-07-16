@@ -115,7 +115,7 @@ class LoginActivity : AppCompatActivity() {
         val displayName = model.displayName
         Toast.makeText(
                 applicationContext,
-                "$welcome $displayName",
+                "$welcome Sebastián",
                 Toast.LENGTH_LONG
         ).show()
     }

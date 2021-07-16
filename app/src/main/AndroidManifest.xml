@@ -16,9 +16,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AguasDelRey">
         <activity
+            android:name=".ui.delivery.DeliveryActivity"
+            android:label="@string/title_activity_delivery"
+            android:theme="@style/Theme.AguasDelRey.NoActionBar"></activity>
+        <activity
             android:name=".ui.sync.SyncActivity"
             android:label="@string/title_activity_sync"
-            android:theme="@style/Theme.AguasDelRey.NoActionBar"></activity>
+            android:theme="@style/Theme.AguasDelRey.NoActionBar" />
         <activity
             android:name=".ui.route.RouteActivity"
             android:label="@string/title_activity_route"

@@ -114,11 +114,41 @@
     </string>
     <string name="title_activity_sync">SyncActivity</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="first_fragment_label">Resultado de la sincronización</string>
+    <string name="second_fragment_label">Detalles de sincronización</string>
+    <string name="next">Más información</string>
+    <string name="previous">Anterior</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_first_fragment">¡La sincronización ha sido exitosa!</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="second_fragment_cuatro">La cantidad de clientes a visitar es %1$s  y el tiempo estimado del recorrido %1$s". </string>
+    <string name="second_fragment_tres">Se ha sincronizado la ruta de repartos de \" Nombre y Apellido\". </string>
+    <string name="second_fragment_dos">La fecha del reparto es:  "DD/MM/AAAA". </string>
+    <string name="second_fragment">Turno : Mañana". </string>
+    <string name="activation_text_1">¡Genial!</string>
+    <string name="signup_activation">Ya puedes acceder a la ruta de repartos</string>
+    <string name="button_back_upper">Más info</string>
+    <string name="btn_close_shift">Cerrar turno</string>
+    <string name="name_client">Nombre del cliente</string>
+    <string name="type_of_client">Consumidor final</string>
+    <string name="deliver_in_progress">Entrega en camino</string>
+    <string name="_start_task">Entregar</string>
+    <string name="title_activity_delivery">DeliveryActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
 </resources>
