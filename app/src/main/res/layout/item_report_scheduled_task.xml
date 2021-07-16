@@ -7,7 +7,6 @@
     android:bottomRightRadius="7dp"
     android:topLeftRadius="7dp"
     android:topRightRadius="7dp"
-    android:background="@drawable/final_gradient_top_200"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -35,7 +34,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_task_client"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Sebastián Baudracco"
+        android:text="Sebastián Baudracco"
         android:textColor="@android:color/black"/>
 
 
@@ -62,7 +61,7 @@
         android:textColor="@android:color/black"
         app:layout_constraintEnd_toStartOf="@+id/pb_in_progress"
         app:layout_constraintTop_toBottomOf="@+id/tv_full_name"
-        tools:text="AV SiempreVIVA 721" />
+        android:text="Av Siempreviva 721" />
 
     <TextView
         android:id="@+id/tv_stage"

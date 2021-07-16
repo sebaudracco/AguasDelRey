@@ -64,14 +64,10 @@ class TasksAdapter(private var scheduledTasks: Array<ScheduleTask>) : RecyclerVi
            // itemView. tv_client_value.text = task.clientDescription
            // itemView.tv_adress_value.text = task.addressDescription
            // itemView.tv_person_count.text = task.peopleCount.toString()
-
             setProgressTypeText(task.progressive)
-
             showAsUnproductiveTask(task.idleTask)
             showTaskStateAndAvailableActions(task)
             showAsLunchTask(task)
-
-
         }
 
         private fun showAsLunchTask(task: ScheduleTask) {
