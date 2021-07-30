@@ -1,8 +1,13 @@
 package com.sebaudracco.aguasdelrey.ui.home.ui.home
 
 import android.R
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,7 +31,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
-
+    private lateinit var dialog: AlertDialog
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -46,10 +51,26 @@ class HomeFragment : Fragment() {
         })
 
         setCircleMenu()
-
+        showLoadingDialog()
+        Handler(Looper.getMainLooper()).postDelayed({
+            dialog.dismiss()
+            binding.tvLastSync.visibility = View.VISIBLE
+            binding.tvLastSyncData.visibility = View.VISIBLE
+            binding.tvLastSyncState.visibility = View.VISIBLE
+        }, 7000)
         return root
-    }
 
+    }
+    private fun showLoadingDialog() {
+        if (!::dialog.isInitialized) {
+            val builder = AlertDialog.Builder(context)
+            val view = LayoutInflater.from(context).inflate(com.sebaudracco.aguasdelrey.R.layout.dialog_receiving_data, null)
+            builder.setView(view)
+            builder.setCancelable(false)
+            dialog = builder.create()
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) }
+        dialog.show()
+    }
     private fun setCircleMenu() {
 
         val menu: CircleMenuView = binding.circleMenu

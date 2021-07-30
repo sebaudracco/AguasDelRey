@@ -6,6 +6,8 @@ import com.sebaudracco.aguasdelrey.data.model.Product
 
 class DeliveryViewModel : ViewModel (){
 
+    var userId: String? = null
+    var clientDescription : String ? =null
     var delivered = MutableLiveData<List<Product>>()
 
     fun setOnCheckProducts(product: MutableList<Product>) {

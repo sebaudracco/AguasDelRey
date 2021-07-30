@@ -1,5 +1,6 @@
 package com.sebaudracco.aguasdelrey.ui.route
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -15,9 +16,15 @@ import java.util.*
 
 class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
+    companion object {
+        const val RC_EDIT_TASKS = 10
+    }
+
+
     private lateinit var binding: ActivityRouteBinding
     lateinit var viewModel: RouteViewModel
     private lateinit var adapter: TasksAdapter
+    private lateinit var tasks: MutableList<ScheduleTask>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,31 +38,6 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
     }
 
     private fun initViewModel() {
-    }
-
-
-    private fun getDailyTasks() {
-        /* viewModel.getTasksForCurrentDate().observe(this, Observer { tasks ->
-             if (::adapter.isInitialized) {
-                 updateTaskList(tasks)
-             } else {
-                         initTasksList(tasks)
-
-             }
-             tasks ?: return@Observer
-             hideProgressLayout()
-         })*/
-
-        initTasksList()
-    }
-
-    private fun initTasksList() {
-
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        layoutManager.reverseLayout = true
-        val recycler = findViewById<RecyclerView>(R.id.recycler_tasks)
-        recycler.layoutManager = layoutManager
         val task = ScheduleTask(
             UUID.randomUUID().toString(),
             UUID.randomUUID().toString(),
@@ -109,7 +91,32 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
             true,
             false
         )
-        val tasks = arrayOf(task4, task3, task2, task)
+        tasks = arrayOf(task4, task3, task2, task).toMutableList()
+    }
+
+
+    private fun getDailyTasks() {
+        /* viewModel.getTasksForCurrentDate().observe(this, Observer { tasks ->
+             if (::adapter.isInitialized) {
+                 updateTaskList(tasks)
+             } else {
+                         initTasksList(tasks)
+
+             }
+             tasks ?: return@Observer
+             hideProgressLayout()
+         })*/
+
+        initTasksList()
+    }
+
+    private fun initTasksList() {
+
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        layoutManager.reverseLayout = true
+        val recycler = findViewById<RecyclerView>(R.id.recycler_tasks)
+        recycler.layoutManager = layoutManager
         adapter = TasksAdapter(tasks)
         adapter.setOnItemActionClickListener(this)
         recycler.adapter = adapter
@@ -119,14 +126,28 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
     }
 
 
-
     override fun onCheckProducts(scheduleTask: ScheduleTask, adapterPosition: Int) {
         val intent = Intent().setClass(this, DeliveryActivity::class.java)
-        intent.putExtra(Constants.EXTRA_USER_ID,"")
-        startActivity(intent)    }
+        intent.putExtra(Constants.EXTRA_USER_ID, scheduleTask.id)
+        intent.putExtra(Constants.EXTRA_USER_NAME, scheduleTask.clientDescription)
+        startActivityForResult(intent, RC_EDIT_TASKS)
+    }
 
     override fun onUnCheckProducts(scheduleTask: ScheduleTask) {
     }
 
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == RC_EDIT_TASKS) {
+            if (resultCode == Activity.RESULT_OK) {
+                val userId = data!!.extras?.getString(Constants.EXTRA_USER_ID)
+                tasks.forEach {
+                    if (it.id == userId) {
+                        tasks.remove(it)
+                        getDailyTasks()
+                    }
+                }
+            }
+        }
+    }
 }

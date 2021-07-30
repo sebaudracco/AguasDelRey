@@ -1,5 +1,7 @@
 package com.sebaudracco.aguasdelrey.ui.delivery
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,6 +15,7 @@ import androidx.viewpager.widget.ViewPager
 import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.Product
 import com.sebaudracco.aguasdelrey.databinding.ActivityDeliveryBinding
+import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.delivery.ui.main.SectionsPagerAdapter
 import java.util.*
 
@@ -44,10 +47,16 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
 
         //  viewModel.callGetWebView(false, getKeysWebViews())
         //  viewModel.callGetFeature(true, getFeatures())
+
         deliveredProducts = mutableListOf()
         products= mutableListOf()
         observeViewModel()
         initProductList()
+        viewModel.userId = intent.extras?.getString(Constants.EXTRA_USER_ID)
+        viewModel.clientDescription = intent.extras?.getString(Constants.EXTRA_USER_NAME)
+        if(viewModel.clientDescription!=null){
+            binding.tvUserName.text = viewModel.clientDescription
+        }
 
     }
     private fun initViewModel() {
@@ -138,9 +147,11 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
                     .setMessage(R.string.activity_delivered_products)
                     .setPositiveButton("OK") { dialog, _ ->
                         dialog.dismiss()
-                        finish()
                         deliveredProducts.clear()
-                        // Aqui un onActivityOnResult que devuelva el ok para que el pedido entregado sea eliminado de la lista de la ruta
+                        val intent = Intent()
+                        intent.putExtra(Constants.EXTRA_USER_ID ,viewModel.userId)
+                        setResult(Activity.RESULT_OK, intent)
+                        finish()
                     }
                     .setNegativeButton("Revisar entrega") { dialog, _ ->
 

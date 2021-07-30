@@ -35,13 +35,13 @@ class SyncActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            Snackbar.make(view, "Mensaje", Snackbar.LENGTH_LONG)
+                .setAction("hacer algo con esto!", null).show()
         }
         showLoadingDialog()
         Handler(Looper.getMainLooper()).postDelayed({
             dialog.dismiss()
-        }, 5000)
+        }, 10000)
     }
     private fun showLoadingDialog() {
         if (!::dialog.isInitialized) {

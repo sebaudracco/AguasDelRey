@@ -24,7 +24,6 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var dialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,23 +47,11 @@ class HomeActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        showLoadingDialog()
-        Handler(Looper.getMainLooper()).postDelayed({
-            dialog.dismiss()
-        }, 5000)
+
 
     }
 
-    private fun showLoadingDialog() {
-        if (!::dialog.isInitialized) {
-            val builder = AlertDialog.Builder(this)
-            val view = LayoutInflater.from(this).inflate(R.layout.dialog_receiving_data, null)
-            builder.setView(view)
-            builder.setCancelable(false)
-            dialog = builder.create()
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) }
-        dialog.show()
-    }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

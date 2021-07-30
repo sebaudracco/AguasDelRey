@@ -5,14 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.ScheduleTask
-import com.sebaudracco.aguasdelrey.ui.delivery.DeliveryActivity
 
-class TasksAdapter(var scheduleTask: Array<ScheduleTask>) :
+class TasksAdapter(var scheduleTask: MutableList<ScheduleTask>) :
     RecyclerView.Adapter<TasksAdapter.ViewHolder>() {
 
     interface OnClickListener {

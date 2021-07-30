@@ -15,7 +15,7 @@
         android:id="@+id/iv_task_client"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        app:srcCompat="@drawable/ic_emotions_happy"
+        app:srcCompat="@drawable/ic_baseline_house_24"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="16dp"
