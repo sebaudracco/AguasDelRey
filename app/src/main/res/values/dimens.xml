@@ -9,4 +9,12 @@
     <dimen name="text_margin">16dp</dimen>
     <dimen name="appbar_padding">16dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
+    <dimen name="default_dp_4_6">24dp</dimen>
+    <dimen name="default_dp_5_2">10dp</dimen>
+    <dimen name="default_dp_4_4">16dp</dimen>
+    <dimen name="default_dp_4_2">8dp</dimen>
+    <dimen name="height_item_menu">56dp</dimen>
+    <dimen name="default_dp_4_10">40dp</dimen>
+    <dimen name="item_shortcut_height">64dp</dimen>
+    <dimen name="default_dp_4_3">12dp</dimen>
 </resources>

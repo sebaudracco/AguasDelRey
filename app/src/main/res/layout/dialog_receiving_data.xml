@@ -16,8 +16,8 @@
 
         <ImageView
             android:id="@+id/iv_satellite"
-            android:layout_width="240dp"
-            android:layout_height="240dp"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
             android:layout_marginTop="16dp"
             android:src="@drawable/ic_satellite"
             app:layout_constraintEnd_toEndOf="parent"

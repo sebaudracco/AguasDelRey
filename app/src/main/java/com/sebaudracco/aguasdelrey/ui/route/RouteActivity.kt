@@ -6,17 +6,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.ScheduleTask
 import com.sebaudracco.aguasdelrey.databinding.ActivityRouteBinding
 import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.delivery.DeliveryActivity
-import com.sebaudracco.aguasdelrey.ui.home.HomeActivity
 import java.util.*
 
-class RouteActivity : AppCompatActivity(),
-    TasksAdapter.OnItemActionClickListener {
+class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
     private lateinit var binding: ActivityRouteBinding
     lateinit var viewModel: RouteViewModel
@@ -29,10 +26,6 @@ class RouteActivity : AppCompatActivity(),
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.toolbar))
         binding.toolbarLayout.title = "Ruta 21 de Agosto"
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "", Snackbar.LENGTH_LONG)
-                .setAction("", null).show()
-        }
         initViewModel()
         getDailyTasks()
     }
@@ -66,17 +59,57 @@ class RouteActivity : AppCompatActivity(),
         val task = ScheduleTask(
             UUID.randomUUID().toString(),
             UUID.randomUUID().toString(),
-            "Avenida SiempreViva  721 ",
+            "27 de Abril 370 ",
             "Sebastián Baudracco",
             true,
             true,
             false,
             1,
+            "8:45",
+            true,
+            false
+        )
+
+        val task2 = ScheduleTask(
+            UUID.randomUUID().toString(),
+            UUID.randomUUID().toString(),
+            " Corrientes 18 ",
+            "Giuliana Mattio",
+            true,
+            true,
+            false,
+            2,
             "9:45",
             true,
             false
         )
-        val tasks = arrayOf(task, task, task, task, task, task, task, task, task, task, task)
+        val task3 = ScheduleTask(
+            UUID.randomUUID().toString(),
+            UUID.randomUUID().toString(),
+            "Juan B Justo 726 ",
+            "Nicolas Calcagno",
+            true,
+            true,
+            false,
+            3,
+            "10:45",
+            true,
+            false
+        )
+        val task4 = ScheduleTask(
+            UUID.randomUUID().toString(),
+            UUID.randomUUID().toString(),
+            "Ayacucho 468 PB C ",
+            "Ezequiel Jimenez",
+            true,
+            true,
+            false,
+            4,
+            "11:45",
+            true,
+            false
+        )
+        val tasks = arrayOf(task4, task3, task2, task)
         adapter = TasksAdapter(tasks)
         adapter.setOnItemActionClickListener(this)
         recycler.adapter = adapter
@@ -85,16 +118,14 @@ class RouteActivity : AppCompatActivity(),
         )
     }
 
-    override fun onPhysicalProgressClick(task: ScheduleTask) {
-    }
 
-    override fun onPipelineProgressClick(task: ScheduleTask) {
-    }
 
-    override fun onStartTaskClick(task: ScheduleTask) {
+    override fun onCheckProducts(scheduleTask: ScheduleTask, adapterPosition: Int) {
         val intent = Intent().setClass(this, DeliveryActivity::class.java)
         intent.putExtra(Constants.EXTRA_USER_ID,"")
-        startActivity(intent)
+        startActivity(intent)    }
+
+    override fun onUnCheckProducts(scheduleTask: ScheduleTask) {
     }
 
 

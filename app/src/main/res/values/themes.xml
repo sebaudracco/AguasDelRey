@@ -41,9 +41,33 @@
         <item name="android:textSize">@dimen/default_sp_4_3</item>
         <item name="android:lineSpacingMultiplier">1.15</item>
     </style>
+
+    <style name="text_caption_l" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_medium</item>
+        <item name="android:textSize">@dimen/default_sp_2_9</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="text_title_l.black1" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_bold</item>
+        <item name="android:textSize">@dimen/default_sp_2_11</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+    <style name="text_headline_s" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_semibold</item>
+        <item name="android:textSize">@dimen/default_sp_2_9</item>
+    </style>
+
+    <style name="text_headline_s.black1">
+        <item name="android:textColor">@color/black1</item>
+    </style>
+
     <!-- END TEXT STYLES -->
     <dimen name="default_sp_4_3">14sp</dimen>
     <dimen name="default_sp_2_7">16sp</dimen>
+    <dimen name="default_sp_2_9">20sp</dimen>
+    <dimen name="default_sp_2_11">28sp</dimen>
+
 
     <style name="GreenFilledButton">
         <item name="android:background">@color/color_green</item>

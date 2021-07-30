@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/route_client"
     android:bottomLeftRadius="7dp"
     android:bottomRightRadius="7dp"
     android:topLeftRadius="7dp"
@@ -88,7 +89,7 @@
         app:tint="@color/gray5" />
 
     <TextView
-        android:id="@+id/tv_person_count"
+        android:id="@+id/tv_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -107,7 +108,7 @@
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/ic_clock"
         app:layout_constraintTop_toBottomOf="@+id/tv_stage"
-        app:layout_constraintStart_toEndOf="@id/tv_person_count"
+        app:layout_constraintStart_toEndOf="@id/tv_count"
         android:layout_marginTop="24dp"
         android:layout_marginStart="24dp"
         app:tint="@color/gray5" />

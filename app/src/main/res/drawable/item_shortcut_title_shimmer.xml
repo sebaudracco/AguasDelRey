@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <size android:width="@dimen/item_shortcut_height" android:height="@dimen/default_dp_4_3"/>
+    <gradient android:startColor="@color/shimmer_start" android:endColor="@color/shimmer_end"/>
+    <corners android:radius="6dp"/>
+
+</shape>
