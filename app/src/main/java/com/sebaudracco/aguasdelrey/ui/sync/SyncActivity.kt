@@ -1,6 +1,8 @@
 package com.sebaudracco.aguasdelrey.ui.sync
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -59,4 +61,16 @@ class SyncActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        sendMessageSyncTrue()
+    }
+
+    private fun sendMessageSyncTrue() {
+        val intent = Intent()
+        setResult(Activity.RESULT_OK, intent)
+        finish()
+    }
+
 }

@@ -81,14 +81,14 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
 
         val product = Product(
             UUID.randomUUID().toString(),
-            "Bidón 20 litros ",
+            "Bidón 20 litros  ",
             2,
             false,
             "0"
         )
         val product2 = Product(
             UUID.randomUUID().toString(),
-            "Dispenser",
+            "Abono mensual",
             1,
             false,
             "0"
@@ -108,7 +108,7 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             "0"
         )
 
-         products = arrayOf(product3, product4, product4, product, product, product2).toMutableList()
+         products = arrayOf(product3, product, product, product2).toMutableList()
         adapter = ProductAdapter(products)
         adapter.setOnClickListener(this)
 

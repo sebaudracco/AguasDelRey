@@ -7,7 +7,7 @@
     <string name="action_sign_in_short">Ingreso</string>
     <string name="welcome">"Bienvenido!"</string>
     <string name="invalid_username">El usuario no es válido</string>
-    <string name="invalid_password">La contraseña debe tener más de 5 caracteres</string>
+    <string name="invalid_password">La contraseña debe tener más de 8 caracteres</string>
     <string name="login_failed">"El login ha fallado!"</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -16,7 +16,6 @@
     <string name="nav_header_subtitle">mail@mail.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Configuración</string>
-
     <string name="menu_home">Sincronizar ruta</string>
     <string name="menu_gallery">Reparto</string>
     <string name="menu_slideshow">Mostrar ruta</string>
