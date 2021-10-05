@@ -108,8 +108,8 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             "0"
         )
 
-         products = arrayOf(product3, product, product, product2).toMutableList()
-        adapter = ProductAdapter(products)
+         products = arrayOf(product4, product, product2).toMutableList()
+        adapter = ProductAdapter(products, viewModel)
         adapter.setOnClickListener(this)
 
 

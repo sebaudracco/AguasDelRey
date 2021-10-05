@@ -69,4 +69,12 @@
     <string name="producto_entregado">Entregado</string>
     <string name="close_deliver">Cerrar Pedido</string>
     <string name="activity_delivered_products">¡Parece que has entregado todo tu pedido! ¿Deseas volver a la ruta de entregas?</string>
+    <string name="deliver_amount">Total</string>
+    <string name="_amount">$</string>
+    <string name="amount">10.00</string>
+    <string name="cobro_amount">Recibí</string>
+    <string name="dni">DNI</string>
+    <string name="person_doc">Responsable</string>
+    <string name="dni_input">Ingrese dni</string>
+    <string name="devlivey_btn_ok">Finalizar pedido</string>
 </resources>

@@ -32,7 +32,7 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
         binding = ActivityRouteBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.toolbar))
-        binding.toolbarLayout.title = "Ruta 21 de Agosto"
+        binding.toolbarLayout.title = "6 de Octubre 2021"
         initViewModel()
         getDailyTasks()
     }
