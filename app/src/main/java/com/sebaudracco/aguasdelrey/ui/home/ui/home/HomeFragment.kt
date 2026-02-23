@@ -27,6 +27,7 @@ import com.sebaudracco.aguasdelrey.ui.home.ui.slideshow.SlideshowFragment
 import com.sebaudracco.aguasdelrey.ui.map.MapsActivity
 import com.sebaudracco.aguasdelrey.ui.route.RouteActivity
 import com.sebaudracco.aguasdelrey.ui.sync.SyncActivity
+import com.sebaudracco.aguasdelrey.ui.route.SelectRutaActivity
 
 
 class HomeFragment : Fragment() {
@@ -112,7 +113,7 @@ class HomeFragment : Fragment() {
                 when (index) {
                     0 -> {// REPARTO
                         if (countLastSync > 0) {
-                            val intent = Intent().setClass(context!!, RouteActivity::class.java)
+                            val intent = Intent().setClass(context!!, SelectRutaActivity::class.java)
                             startActivity(intent)
                         } else {
                             val dialog = AlertDialog.Builder(context)
