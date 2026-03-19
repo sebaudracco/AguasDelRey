@@ -14,9 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
 import com.sebaudracco.aguasdelrey.databinding.ActivityLoginBinding
-
 import com.sebaudracco.aguasdelrey.R
-import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.home.HomeActivity
 
 class LoginActivity : AppCompatActivity() {
@@ -32,18 +30,16 @@ class LoginActivity : AppCompatActivity() {
 
         val username = binding.username
         val password = binding.password
-        val login = binding.login
-        val loading = binding.loading
+        val login    = binding.login
+        val loading  = binding.loading
 
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
+        // Pasar contexto para que el Repository pueda usar SharedPreferences
+        loginViewModel = ViewModelProvider(this, LoginViewModelFactory(applicationContext))
             .get(LoginViewModel::class.java)
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
-
             if (loginState.usernameError != null) {
                 username.error = getString(loginState.usernameError)
             }
@@ -54,15 +50,15 @@ class LoginActivity : AppCompatActivity() {
 
         loginViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
-
             loading.visibility = View.GONE
+
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
                 updateUiWithUser(loginResult.success)
                 setResult(Activity.RESULT_OK)
-                openHomeActivity(username)
+                openHomeActivity()
             }
         })
 
@@ -91,28 +87,28 @@ class LoginActivity : AppCompatActivity() {
                 }
                 false
             }
+        }
 
-            login.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
-            }
+        login.setOnClickListener {
+            loading.visibility = View.VISIBLE
+            loginViewModel.login(
+                username.text.toString(),
+                password.text.toString()
+            )
         }
     }
 
-    private fun openHomeActivity(success: EditText) {
-        val intent = Intent().setClass(this, HomeActivity::class.java)
-        intent.putExtra(Constants.EXTRA_USER_ID, success.toString())
+    private fun openHomeActivity() {
+        val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
         finish()
     }
 
-
     private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
         val displayName = model.displayName
         Toast.makeText(
             applicationContext,
-            "$welcome Sebastián",
+            "¡Bienvenido, $displayName!",
             Toast.LENGTH_LONG
         ).show()
     }
@@ -122,19 +118,12 @@ class LoginActivity : AppCompatActivity() {
     }
 }
 
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
 fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
     this.addTextChangedListener(object : TextWatcher {
         override fun afterTextChanged(editable: Editable?) {
             afterTextChanged.invoke(editable.toString())
         }
-
         override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
     })
-
-
 }
