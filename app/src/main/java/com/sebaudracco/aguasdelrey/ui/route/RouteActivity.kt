@@ -12,6 +12,7 @@ import com.sebaudracco.aguasdelrey.data.model.ScheduleTask
 import com.sebaudracco.aguasdelrey.databinding.ActivityRouteBinding
 import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.delivery.DeliveryActivity
+import com.sebaudracco.aguasdelrey.data.DataRepository
 
 class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
