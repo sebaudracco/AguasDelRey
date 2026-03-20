@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sebaudracco.aguasdelrey.R
-import com.sebaudracco.aguasdelrey.data.DataRepository
 import com.sebaudracco.aguasdelrey.data.model.RutaReparto
 import com.sebaudracco.aguasdelrey.databinding.ActivitySelectRutaBinding
 import kotlinx.coroutines.Dispatchers
