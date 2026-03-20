@@ -19,6 +19,15 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- ProgressBar visible mientras carga las rutas desde la API -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_rutas"
         android:layout_width="match_parent"
