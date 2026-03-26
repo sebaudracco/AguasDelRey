@@ -3,119 +3,154 @@ package com.sebaudracco.aguasdelrey.ui.delivery
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager.widget.ViewPager
-import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.Product
 import com.sebaudracco.aguasdelrey.databinding.ActivityDeliveryBinding
 import com.sebaudracco.aguasdelrey.helpers.Constants
-import com.sebaudracco.aguasdelrey.ui.delivery.ui.main.SectionsPagerAdapter
-import java.util.*
 
 class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
 
     private lateinit var binding: ActivityDeliveryBinding
-    lateinit var adapter: ProductAdapter
+    private lateinit var adapter: ProductAdapter
     private lateinit var deliveredProducts: MutableList<Product>
-    private lateinit var products: MutableList<Product>
     private lateinit var viewModel: DeliveryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityDeliveryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        val viewPager: ViewPager = binding.viewPager
-        viewPager.adapter = sectionsPagerAdapter
-
         initViewModel()
-        loadShimmer()
-
-        deliveredProducts = mutableListOf()
-        products = mutableListOf()
-        observeViewModel()
+        receiveIntentData()
         initProductList()
-        viewModel.userId = intent.extras?.getString(Constants.EXTRA_USER_ID)
-        viewModel.clientDescription = intent.extras?.getString(Constants.EXTRA_USER_NAME)
+        observeViewModel()
+        setupButtons()
+    }
+
+    // ── 1. Inicializar ViewModel con factory que inyecta el repo ──────────────
+    private fun initViewModel() {
+        val factory = DeliveryFactory(applicationContext)
+        viewModel   = ViewModelProvider(this, factory)[DeliveryViewModel::class.java]
+    }
+
+    // ── 2. Leer datos del Intent ──────────────────────────────────────────────
+    // Decisión: leemos idPedido (nuevo) y mantenemos EXTRA_USER_ID / EXTRA_USER_NAME
+    // para no romper el onActivityResult de RouteActivity que espera EXTRA_USER_ID.
+    private fun receiveIntentData() {
+        viewModel.idPedido         = intent.getIntExtra(Constants.EXTRA_PEDIDO_ID, 0)
+        viewModel.userId           = intent.getStringExtra(Constants.EXTRA_USER_ID)
+        viewModel.clientDescription= intent.getStringExtra(Constants.EXTRA_USER_NAME)
+
         if (viewModel.clientDescription != null) {
             binding.tvUserName.text = viewModel.clientDescription
         }
+
+        // Cargar pedido desde la API
+        viewModel.cargarPedido()
     }
 
-    private fun initViewModel() {
-        val factory = DeliveryFactory()
-        viewModel = ViewModelProvider(this, factory).get(DeliveryViewModel::class.java)
-    }
-
+    // ── 3. Inicializar RecyclerView vacío (se poblará por LiveData) ───────────
     private fun initProductList() {
+        deliveredProducts = mutableListOf()
+
         val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        layoutManager.reverseLayout = true
+        binding.recyclerDeliver.layoutManager = layoutManager
 
-        val recyclerInitial = findViewById<RecyclerView>(R.id.recycler_deliver)
-        recyclerInitial.layoutManager = layoutManager
-
-        val product = Product(UUID.randomUUID().toString(), "Bidón 20 litros", 2, false, "0")
-        val product2 = Product(UUID.randomUUID().toString(), "Abono mensual", 1, false, "0")
-        val product3 = Product(UUID.randomUUID().toString(), "Café La Virginia 500 gr.", 1, false, "0")
-
-        products = arrayOf(product, product2, product3).toMutableList()
-        adapter = ProductAdapter(products, viewModel)
+        adapter = ProductAdapter(mutableListOf(), viewModel)
         adapter.setOnClickListener(this)
-
-        recyclerInitial.adapter = adapter
-        recyclerInitial.addItemDecoration(
+        binding.recyclerDeliver.adapter = adapter
+        binding.recyclerDeliver.addItemDecoration(
             DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         )
     }
 
-    private fun loadShimmer() {
-        binding.shimmerUser.visibility = View.VISIBLE
-        binding.shimmerUser.startShimmer()   // API actualizada: startShimmer()
-        Handler(Looper.getMainLooper()).postDelayed({
-            hideShimmer()
-        }, 5000)
-    }
+    // ── 4. Observar LiveData del ViewModel ────────────────────────────────────
+    private fun observeViewModel() {
 
-    private fun hideShimmer() {
-        try {
-            binding.shimmerUser.stopShimmer()  // API actualizada: stopShimmer()
-            binding.shimmerUser.visibility = View.GONE
-            binding.lyProfileArea.visibility = View.VISIBLE
-        } catch (e: NullPointerException) {
+        // Loading: mostrar/ocultar shimmer
+        viewModel.loading.observe(this) { isLoading ->
+            if (isLoading) {
+                binding.shimmerUser.visibility = View.VISIBLE
+                binding.shimmerUser.startShimmer()
+                binding.recyclerDeliver.visibility = View.GONE
+            } else {
+                binding.shimmerUser.stopShimmer()
+                binding.shimmerUser.visibility = View.GONE
+                binding.lyProfileArea.visibility = View.VISIBLE
+                binding.recyclerDeliver.visibility = View.VISIBLE
+            }
+        }
+
+        // Error: mostrar Toast
+        viewModel.error.observe(this) { mensaje ->
+            if (!mensaje.isNullOrEmpty()) {
+                Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // Productos cargados: actualizar adapter
+        viewModel.productos.observe(this) { productos ->
+            adapter.updateProductos(productos.toMutableList())
+        }
+
+        // Total recalculado: actualizar TextView
+        viewModel.totalPedido.observe(this) { total ->
+            binding.tvAmount.text = "$${"%.2f".format(total)}"
+        }
+
+        // Lista de entregados: habilitar botón cuando todos están marcados
+        viewModel.delivered.observe(this) { entregados ->
+            val totalProds = viewModel.productos.value?.size ?: 0
+            binding.btnSave.isEnabled = entregados.size == totalProds && totalProds > 0
+        }
+
+        // Entrega exitosa: cerrar activity con RESULT_OK
+        viewModel.entregaExitosa.observe(this) { exitosa ->
+            if (exitosa) {
+                val intent = Intent()
+                intent.putExtra(Constants.EXTRA_USER_ID, viewModel.userId)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
         }
     }
 
-    private fun observeViewModel() {
-        viewModel.delivered.observe(this, androidx.lifecycle.Observer {
-            if (it.size == products.size) {
-                val dialog = android.app.AlertDialog.Builder(this)
-                    .setTitle("Entrega finalizada")
-                    .setCancelable(false)
-                    .setMessage(R.string.activity_delivered_products)
-                    .setPositiveButton("OK") { dialog, _ ->
-                        dialog.dismiss()
-                        deliveredProducts.clear()
-                        val intent = Intent()
-                        intent.putExtra(Constants.EXTRA_USER_ID, viewModel.userId)
-                        setResult(Activity.RESULT_OK, intent)
-                        finish()
-                    }
-                    .setNegativeButton("Revisar entrega") { dialog, _ -> }
-                dialog.show()
+    // ── 5. Botón confirmar entrega ────────────────────────────────────────────
+    private fun setupButtons() {
+        binding.btnSave.isEnabled = false  // deshabilitado hasta que se entregue todo
+
+        binding.btnSave.setOnClickListener {
+            val monto = binding.etAmountCobro.text.toString().toDoubleOrNull()
+            val dni   = binding.etDni.text.toString().trim()
+
+            if (monto == null || monto <= 0) {
+                Toast.makeText(this, "Ingresá el monto cobrado", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-        })
+            if (dni.isEmpty()) {
+                Toast.makeText(this, "Ingresá el DNI del receptor", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Confirmación antes de enviar
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Confirmar entrega")
+                .setMessage("¿Confirmar entrega al cliente?\nMonto cobrado: $$monto")
+                .setCancelable(false)
+                .setPositiveButton("Confirmar") { _, _ ->
+                    viewModel.confirmarEntrega(monto, dni, "")
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
     }
 
+    // ── Callbacks del adapter ─────────────────────────────────────────────────
     override fun onCheckProducts(product: Product, adapterPosition: Int) {
         deliveredProducts.add(product)
         viewModel.setOnCheckProducts(deliveredProducts)

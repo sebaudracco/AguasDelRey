@@ -12,7 +12,6 @@ import com.sebaudracco.aguasdelrey.data.model.ScheduleTask
 import com.sebaudracco.aguasdelrey.databinding.ActivityRouteBinding
 import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.delivery.DeliveryActivity
-import com.sebaudracco.aguasdelrey.data.DataRepository
 
 class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
@@ -27,14 +26,12 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityRouteBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        // Recibir la ruta seleccionada desde SelectRutaActivity
         val rutaId = intent.getStringExtra("RUTA_ID") ?: ""
-        val ruta = DataRepository.getRutaById(rutaId)
+        val ruta   = DataRepository.getRutaById(rutaId)
 
         if (ruta != null) {
             binding.toolbarLayout.title = ruta.nombre
@@ -63,10 +60,18 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
     }
 
     override fun onCheckProducts(scheduleTask: ScheduleTask, adapterPosition: Int) {
-        val intent = Intent().setClass(this, DeliveryActivity::class.java)
-        intent.putExtra(Constants.EXTRA_USER_ID, scheduleTask.id)
-        intent.putExtra(Constants.EXTRA_USER_NAME, scheduleTask.clientDescription)
-        intent.putExtra("TASK_ID", scheduleTask.id)
+        val intent = Intent(this, DeliveryActivity::class.java)
+
+        // ── Cambio principal respecto al original ────────────────────────────
+        // Antes: se pasaba scheduleTask.id como EXTRA_USER_ID (incorrecto,
+        //        era el id de la tarea, no del cliente ni del pedido).
+        // Ahora: pasamos idPedido (de BD) y mantenemos EXTRA_USER_ID con el
+        //        taskId para que onActivityResult siga funcionando igual.
+        intent.putExtra(Constants.EXTRA_PEDIDO_ID,  scheduleTask.idPedido)   // NUEVO
+        intent.putExtra(Constants.EXTRA_CLIENTE_ID, scheduleTask.idCliente)  // NUEVO
+        intent.putExtra(Constants.EXTRA_USER_ID,    scheduleTask.id)         // existente — para RESULT_OK
+        intent.putExtra(Constants.EXTRA_USER_NAME,  scheduleTask.clientDescription)
+
         startActivityForResult(intent, RC_EDIT_TASKS)
     }
 
@@ -74,6 +79,7 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        // Sin cambios — sigue funcionando igual que antes
         if (requestCode == RC_EDIT_TASKS && resultCode == Activity.RESULT_OK) {
             val userId = data?.extras?.getString(Constants.EXTRA_USER_ID)
             tasks.removeIf { it.id == userId }

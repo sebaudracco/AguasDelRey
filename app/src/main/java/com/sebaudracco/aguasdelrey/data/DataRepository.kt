@@ -32,7 +32,7 @@ object DataRepository {
             val p = array.getJSONObject(i)
             paradas.add(ScheduleTask(
                 id                 = p.getString("id"),
-                taskId             = p.getString("id_pedido").toString(),
+                taskId             = p.optInt("id_pedido", 0).toString(),
                 addressDescription = p.getString("address"),
                 clientDescription  = p.getString("clientDescription"),
                 inProgress         = false,
@@ -41,7 +41,14 @@ object DataRepository {
                 peopleCount        = p.getInt("orden"),
                 startTime          = "",
                 progressive        = false,
-                lunch              = false
+                lunch              = false,
+                // ── Campos nuevos ────────────────────────────────────────────
+                // Decisión: usamos optInt() en lugar de getInt() para que si
+                // por algún motivo el campo no viene en la respuesta, el valor
+                // quede en 0 en vez de lanzar una excepción que rompa toda la
+                // carga de rutas. Fail-safe sobre fail-fast aquí porque es UI.
+                idPedido           = p.optInt("id_pedido", 0),
+                idCliente          = p.optInt("id_cliente", 0)
             ))
         }
         return paradas

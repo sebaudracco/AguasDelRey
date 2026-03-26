@@ -2,7 +2,6 @@ package com.sebaudracco.aguasdelrey.ui.delivery
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -13,20 +12,41 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.Product
 
-
-class ProductAdapter(var products: MutableList<Product>, var viewModel: DeliveryViewModel) :
-    RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
+/**
+ * ProductAdapter — adaptador del RecyclerView de productos en DeliveryActivity.
+ *
+ * Cambios respecto al original:
+ * - updateProductos(): método para refrescar la lista desde LiveData.
+ * - Los botones +/- ahora llaman al ViewModel real (sin comentar).
+ * - El counter muestra cantidadEntregada (no quantity fija).
+ * - Firma de OnClickListener actualizada para el nuevo Product.
+ */
+class ProductAdapter(
+    private var products: MutableList<Product>,
+    private val viewModel: DeliveryViewModel
+) : RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
 
     interface OnClickListener {
         fun onCheckProducts(product: Product, adapterPosition: Int)
         fun onUnCheckProducts(product: Product)
     }
 
-    private lateinit var mOnClickListener: View.OnClickListener
     private var listener: OnClickListener? = null
 
     fun setOnClickListener(listener: DeliveryActivity) {
         this.listener = listener
+    }
+
+    /**
+     * Actualiza la lista completa desde el ViewModel.
+     * Decisión: usamos notifyDataSetChanged por simplicidad — para listas
+     * pequeñas de productos (< 20 ítems) el costo es despreciable.
+     * En una lista grande usaríamos DiffUtil.
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateProductos(nuevos: MutableList<Product>) {
+        products = nuevos
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -38,74 +58,29 @@ class ProductAdapter(var products: MutableList<Product>, var viewModel: Delivery
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = products[position]
-        holder.name.text = item.description
 
-        holder._subtract.setOnTouchListener(tintColorOnState(decreaseCounter(item), holder._subtract))
-        holder._add.setOnTouchListener(tintColorOnState(incrementCounter(item), holder._add))
+        holder.name.text              = item.description
+        holder.formatCounterTotal.text= item.cantidadEntregada.toString()
 
-        holder.format_counter_total.text = item.quantity.toString()
+        // Botones +/- ahora conectados al ViewModel real
+        holder.subtract.setOnClickListener {
+            viewModel.decreaseCounter(item)
+        }
+        holder.add.setOnClickListener {
+            viewModel.incrementCounter(item)
+        }
 
+        holder.switch.setOnCheckedChangeListener(null) // evitar trigger al rebind
+        holder.switch.isChecked = item.delivered
         holder.switch.setOnCheckedChangeListener { _, isChecked ->
             item.delivered = isChecked
             if (isChecked) {
-                listener?.onCheckProducts(products!![position], position)
-                if (item.description == "Vacío") {
-                    holder.delivered.text = "Retirado"
-                } else {
-                    holder.delivered.text = "Entregado"
-                }
-                holder.delivered.visibility = View.VISIBLE
+                holder.deliveredLabel.text       = "Entregado"
+                holder.deliveredLabel.visibility = View.VISIBLE
+                listener?.onCheckProducts(products[holder.adapterPosition], holder.adapterPosition)
             } else {
-                holder.delivered.visibility = View.GONE
+                holder.deliveredLabel.visibility = View.GONE
                 listener?.onUnCheckProducts(item)
-            }
-        }
-        with(holder.container) {
-            tag = item
-            //  setOnClickListener(mOnClickListener)
-        }
-    }
-
-    private fun incrementCounter(product:  Product): () -> Unit {
-        return {
-            viewModel.incrementCounter(product)
-        }
-    }
-
-    private fun decreaseCounter(product:  Product): () -> Unit {
-        return {
-            viewModel.decreaseCounter(product)
-        }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun tintColorOnState(function: () -> Unit, view: ImageView): View.OnTouchListener {
-
-        return View.OnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_UP -> {
-                   /* CheckConection(
-                        { view.clearColorFilter() },
-                        { noInternet(view.context) },
-                        view.context
-                    )*/
-                    true
-                }
-                MotionEvent.ACTION_DOWN -> {
-                   /* CheckConection({
-                        view.setColorFilter(Color.parseColor("#ce3737"), PorterDuff.Mode.SRC_IN)
-                        function.invoke()
-                    }, { noInternet(view.context) }, view.context)*/
-                    true
-                }
-                else -> {
-                   /* CheckConection(
-                        { view.clearColorFilter() },
-                        { noInternet(view.context) },
-                        view.context*/
-                   // )
-                    false
-                }
             }
         }
     }
@@ -113,13 +88,12 @@ class ProductAdapter(var products: MutableList<Product>, var viewModel: Delivery
     override fun getItemCount(): Int = products.size
 
     inner class ViewHolder(mView: View) : RecyclerView.ViewHolder(mView) {
-        val container: ConstraintLayout = mView.findViewById(R.id.product)
-        val name: TextView = mView.findViewById(R.id.tv_name_product)
-        val switch: SwitchCompat = mView.findViewById(R.id.swt_is_delevered)
-        val delivered: TextView = mView.findViewById(R.id.lblEntregado)
-        val format_counter_total: TextView = mView.findViewById(R.id.format_counter_total)
-        val _subtract: ImageView = mView.findViewById(R.id.format_counter_subtract)
-        val _add: ImageView = mView.findViewById(R.id.format_counter_add)
-
+        val container:          ConstraintLayout = mView.findViewById(R.id.product)
+        val name:               TextView         = mView.findViewById(R.id.tv_name_product)
+        val switch:             SwitchCompat     = mView.findViewById(R.id.swt_is_delevered)
+        val deliveredLabel:     TextView         = mView.findViewById(R.id.lblEntregado)
+        val formatCounterTotal: TextView         = mView.findViewById(R.id.format_counter_total)
+        val subtract:           ImageView        = mView.findViewById(R.id.format_counter_subtract)
+        val add:                ImageView        = mView.findViewById(R.id.format_counter_add)
     }
 }
