@@ -38,15 +38,27 @@ class ProductAdapter(
     }
 
     /**
-     * Actualiza la lista completa desde el ViewModel.
-     * Decisión: usamos notifyDataSetChanged por simplicidad — para listas
-     * pequeñas de productos (< 20 ítems) el costo es despreciable.
-     * En una lista grande usaríamos DiffUtil.
+     * Actualiza la lista completa desde el ViewModel (productos cargados desde API).
      */
     @SuppressLint("NotifyDataSetChanged")
     fun updateProductos(nuevos: MutableList<Product>) {
         products = nuevos
         notifyDataSetChanged()
+    }
+
+    /**
+     * P3 FIX — Actualiza un solo ítem cuando cambia el counter +/-.
+     * Decisión: notifyItemChanged(pos) en lugar de notifyDataSetChanged()
+     * para que solo se redibuje el ViewHolder del producto modificado.
+     * El ViewModel emite la lista completa pero nosotros buscamos qué
+     * posición cambió para hacer un refresh quirúrgico.
+     */
+    fun updateProductoEnPosicion(producto: Product) {
+        val pos = products.indexOfFirst { it.idDetalle == producto.idDetalle }
+        if (pos >= 0) {
+            products[pos] = producto
+            notifyItemChanged(pos)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -1,204 +1,218 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/route_client"
-    android:bottomLeftRadius="7dp"
-    android:bottomRightRadius="7dp"
-    android:topLeftRadius="7dp"
-    android:topRightRadius="7dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+package com.sebaudracco.aguasdelrey.ui.delivery
 
-    <ImageView
-        android:id="@+id/iv_task_client"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        app:srcCompat="@drawable/ic_baseline_house_24"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"/>
+    import android.app.Activity
+    import android.content.Intent
+    import android.os.Bundle
+    import android.text.Editable
+    import android.text.TextWatcher
+    import android.view.View
+    import android.widget.ArrayAdapter
+    import android.widget.Toast
+    import androidx.appcompat.app.AlertDialog
+    import androidx.appcompat.app.AppCompatActivity
+    import androidx.lifecycle.ViewModelProvider
+    import androidx.recyclerview.widget.DividerItemDecoration
+    import androidx.recyclerview.widget.LinearLayoutManager
+    import com.sebaudracco.aguasdelrey.data.model.Product
+    import com.sebaudracco.aguasdelrey.databinding.ActivityDeliveryBinding
+    import com.sebaudracco.aguasdelrey.helpers.Constants
 
+    class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
 
-    <TextView
-        android:id="@+id/tv_client_value"
-        android:layout_width="0dp"
-        style="@style/text_caption_s"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintLeft_toRightOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/iv_task_client"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/iv_task_client"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="Sebastián Baudracco"
-        android:textColor="@android:color/black"/>
+    private lateinit var binding: ActivityDeliveryBinding
+    private lateinit var adapter: ProductAdapter
+    private lateinit var deliveredProducts: MutableList<Product>
+    private lateinit var viewModel: DeliveryViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    binding = ActivityDeliveryBinding.inflate(layoutInflater)
+    setContentView(binding.root)
 
+    initViewModel()
+    receiveIntentData()
+    initProductList()
+    observeViewModel()
+    setupButtons()
+    setupDniFormatter()
+    }
 
-    <TextView
-        android:id="@+id/tv_full_name"
-        style="@style/text_caption_s"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textSize="12sp"
-        android:text="@string/name_client"
-        android:textColor="@color/gray5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_client_value" />
+    private fun initViewModel() {
+    val factory = DeliveryFactory(applicationContext)
+    viewModel   = ViewModelProvider(this, factory)[DeliveryViewModel::class.java]
+    }
 
-    <TextView
-        android:id="@+id/tv_adress_value"
-        style="@style/text_caption_s"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="208dp"
-        android:textColor="@android:color/black"
-        app:layout_constraintEnd_toStartOf="@+id/pb_in_progress"
-        app:layout_constraintTop_toBottomOf="@+id/tv_full_name"
-        android:text="Av Siempreviva 721" />
+    private fun receiveIntentData() {
+    viewModel.idPedido          = intent.getIntExtra(Constants.EXTRA_PEDIDO_ID, 0)
+    viewModel.userId            = intent.getStringExtra(Constants.EXTRA_USER_ID)
+    viewModel.clientDescription = intent.getStringExtra(Constants.EXTRA_USER_NAME)
+    if (viewModel.clientDescription != null) {
+    binding.tvUserName.text = viewModel.clientDescription
+    }
+    viewModel.cargarPedido()
+    viewModel.cargarProductosActivos()  // precarga para el dialog de agregar extra
+    }
 
-    <TextView
-        android:id="@+id/tv_stage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Domicilio"
-        style="@style/text_caption_s"
-        android:textColor="@color/gray5"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_adress_value" />
+    private fun initProductList() {
+    deliveredProducts = mutableListOf()
+    binding.recyclerDeliver.layoutManager = LinearLayoutManager(this)
+    adapter = ProductAdapter(mutableListOf(), viewModel)
+    adapter.setOnClickListener(this)
+    binding.recyclerDeliver.adapter = adapter
+    binding.recyclerDeliver.addItemDecoration(
+    DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+    )
+    }
 
-    <ImageView
-        android:visibility="visible"
-        android:id="@+id/iv_person"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_person"
-        app:layout_constraintTop_toBottomOf="@+id/tv_stage"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="16dp"
-        app:tint="@color/gray5" />
+    private fun observeViewModel() {
 
-    <TextView
-        android:id="@+id/tv_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
-        style="@style/text_caption_s"
-        android:text="8"
-        android:textSize="16sp"
-        android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@id/iv_person"
-        app:layout_constraintTop_toBottomOf="@+id/tv_stage" />
+    viewModel.loading.observe(this) { isLoading ->
+    if (isLoading) {
+    binding.shimmerUser.visibility  = View.VISIBLE
+    binding.shimmerUser.startShimmer()
+    binding.recyclerDeliver.visibility = View.GONE
+    } else {
+    binding.shimmerUser.stopShimmer()
+    binding.shimmerUser.visibility  = View.GONE
+    binding.lyProfileArea.visibility = View.VISIBLE
+    binding.recyclerDeliver.visibility = View.VISIBLE
+    }
+    }
 
-    <ImageView
-        android:visibility="gone"
-        android:id="@+id/iv_clock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_clock"
-        app:layout_constraintTop_toBottomOf="@+id/tv_stage"
-        app:layout_constraintStart_toEndOf="@id/tv_count"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
-        app:tint="@color/gray5" />
+    viewModel.error.observe(this) { mensaje ->
+    if (!mensaje.isNullOrEmpty()) {
+    Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
+    }
+    }
 
-    <TextView
-        style="@style/text_caption_s"
-        android:id="@+id/tv_task_start_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="18:45"
-        android:textSize="16sp"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_stage"
-        app:layout_constraintStart_toEndOf="@id/iv_clock"/>
+    viewModel.productos.observe(this) { productos ->
+    adapter.updateProductos(productos.toMutableList())
+    }
 
-    <TextView
-        android:id="@+id/tv_idle_hours"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Algun otro dato de interés??"
-        android:textSize="12sp"
-        android:textColor="@color/white"
-        android:background="@drawable/background_red_rounded"
-        android:padding="4dp"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/iv_person"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="16dp"/>
+    // P3 FIX: observer de ítem individual para refresh quirúrgico del counter
+    // sin redibujar toda la lista (evita el parpadeo del RecyclerView)
+    viewModel.productoActualizado.observe(this) { producto ->
+    adapter.updateProductoEnPosicion(producto)
+    }
 
-    <TextView
-        android:id="@+id/tv_physical_progress"
-        style="@style/text_caption_s"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:padding="8dp"
-        android:text="@string/type_of_client"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_idle_hours" />
+    viewModel.totalPedido.observe(this) { total ->
+    binding.tvAmount.text = "$${"%.2f".format(total)}"
+    }
 
-    <TextView
-        android:id="@+id/tv_in_progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/deliver_in_progress"
-        android:textColor="@color/color_green"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@+id/pb_in_progress"
-        app:layout_constraintEnd_toEndOf="@id/pb_in_progress"
-        app:layout_constraintHorizontal_bias="0.815"
-        app:layout_constraintStart_toStartOf="@id/pb_in_progress" />
+    // Habilitar botón solo cuando hay al menos 1 producto marcado
+    // P4 fix: "Recibí" ya no es obligatorio
+    viewModel.delivered.observe(this) { entregados ->
+    binding.btnSave.isEnabled = entregados.isNotEmpty()
+    }
 
-    <ProgressBar
-        android:id="@+id/pb_in_progress"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:indeterminate="true"
-        android:indeterminateBehavior="cycle"
-        app:layout_constraintTop_toBottomOf="@+id/tv_stage"
-        app:layout_constraintEnd_toEndOf="@id/iv_task_client"
-        app:layout_constraintStart_toStartOf="@id/iv_task_client" />
+    viewModel.entregaExitosa.observe(this) { exitosa ->
+    if (exitosa) {
+    // P6: devuelve RESULT_OK y cierra — RouteActivity elimina la parada
+    val intent = Intent()
+    intent.putExtra(Constants.EXTRA_USER_ID, viewModel.userId)
+    setResult(Activity.RESULT_OK, intent)
+    finish()
+    }
+    }
+    }
 
-    <TextView
-        android:id="@+id/tv_complete_task"
-        style="@style/text_caption_s"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:padding="8dp"
-        android:text="@string/_start_task"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_idle_hours" />
+    private fun setupButtons() {
+    binding.btnSave.isEnabled = false
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    // P1 — ✕ cancelar entrega con confirmación
+    binding.ivCancel.setOnClickListener {
+    AlertDialog.Builder(this)
+    .setTitle("Cancelar entrega")
+    .setMessage("¿Querés cancelar la entrega de este pedido?")
+    .setCancelable(true)
+    .setPositiveButton("Sí, cancelar") { _, _ -> finish() }
+    .setNegativeButton("No", null)
+    .show()
+    }
+
+    // P1 — + agregar producto extra al pedido
+    binding.ivAddProduct.setOnClickListener {
+    mostrarDialogAgregarProducto()
+    }
+
+    // P6 — Finalizar pedido
+    binding.btnSave.setOnClickListener {
+    // P4: monto no obligatorio — si está vacío se envía 0
+    val monto = binding.etAmountCobro.text.toString().toDoubleOrNull() ?: 0.0
+    // P5: DNI no obligatorio
+    val dni   = binding.etDni.text.toString().replace(".", "").trim()
+
+    AlertDialog.Builder(this)
+    .setTitle("Confirmar entrega")
+    .setMessage("¿Confirmar la entrega?\nTotal: $${"%.2f".format(viewModel.totalPedido.value ?: 0.0)}")
+    .setCancelable(false)
+    .setPositiveButton("Confirmar") { _, _ ->
+    viewModel.confirmarEntrega(monto, dni, "")
+    }
+    .setNegativeButton("Cancelar", null)
+    .show()
+    }
+    }
+
+    /**
+    * P5 — TextWatcher que formatea el DNI como XX.XXX.XXX mientras se escribe.
+    * Decisión: formateamos el display pero enviamos solo dígitos al servidor
+    * para no complicar la validación en backend.
+    */
+    private fun setupDniFormatter() {
+    binding.etDni.addTextChangedListener(object : TextWatcher {
+    private var isFormatting = false
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+    override fun afterTextChanged(s: Editable?) {
+    if (isFormatting || s == null) return
+    isFormatting = true
+
+    val digits = s.toString().replace(".", "").take(8)
+    val formatted = when {
+    digits.length <= 2 -> digits
+    digits.length <= 5 -> "${digits.take(2)}.${digits.drop(2)}"
+    else -> "${digits.take(2)}.${digits.drop(2).take(3)}.${digits.drop(5)}"
+    }
+    s.replace(0, s.length, formatted)
+    isFormatting = false
+    }
+    })
+    }
+
+    /**
+    * P1 — Dialog para seleccionar producto extra a agregar al pedido.
+    * Carga la lista de productos activos desde el ViewModel (ya precargados).
+    */
+    private fun mostrarDialogAgregarProducto() {
+    val productosActivos = viewModel.productosActivos.value
+    if (productosActivos.isNullOrEmpty()) {
+    Toast.makeText(this, "Cargando productos...", Toast.LENGTH_SHORT).show()
+    return
+    }
+
+    val nombres  = productosActivos.map { "${it.nombre} — $${"%.2f".format(it.precioUnitario)}" }.toTypedArray()
+    var seleccion = 0
+
+    AlertDialog.Builder(this)
+    .setTitle("Agregar producto extra")
+    .setSingleChoiceItems(nombres, 0) { _, which -> seleccion = which }
+    .setPositiveButton("Agregar") { _, _ ->
+    viewModel.agregarProductoExtra(productosActivos[seleccion])
+    }
+    .setNegativeButton("Cancelar", null)
+    .show()
+    }
+
+    override fun onCheckProducts(product: Product, adapterPosition: Int) {
+    deliveredProducts.add(product)
+    viewModel.setOnCheckProducts(deliveredProducts)
+    }
+
+    override fun onUnCheckProducts(product: Product) {
+    deliveredProducts.remove(product)
+    viewModel.setOnUncheckProducts(deliveredProducts)
+    }
+    }

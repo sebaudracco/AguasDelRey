@@ -92,6 +92,44 @@ class DeliveryRepository(private val context: Context) {
     }
 
     /**
+     * Obtiene productos activos para agregar extras al pedido.
+     */
+    fun fetchProductosActivos(): ProductosResult {
+        val sharedPref = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+        val token = sharedPref.getString("jwt_token", "") ?: ""
+        val url  = URL("$BASE_URL/productos")
+        val conn = url.openConnection() as HttpURLConnection
+        return try {
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Authorization", "Bearer $token")
+            conn.connectTimeout = 10000
+            conn.readTimeout    = 10000
+            val code = conn.responseCode
+            val body = if (code == 200) conn.inputStream.bufferedReader().readText()
+            else conn.errorStream?.bufferedReader()?.readText() ?: ""
+            if (code == 200) {
+                val arr  = org.json.JSONObject(body).getJSONArray("productos")
+                val lista = mutableListOf<ProductoActivo>()
+                for (i in 0 until arr.length()) {
+                    val p = arr.getJSONObject(i)
+                    lista.add(ProductoActivo(
+                        idProducto     = p.getInt("id_producto"),
+                        nombre         = p.getString("nombre"),
+                        precioUnitario = p.getDouble("precio_unitario")
+                    ))
+                }
+                ProductosResult.Success(lista)
+            } else {
+                ProductosResult.Error("Error $code")
+            }
+        } catch (e: Exception) {
+            ProductosResult.Error(e.message ?: "Error de conexión")
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    /**
      * Registra la entrega en el servidor.
      * Se ejecuta en un hilo IO.
      */
@@ -178,3 +216,15 @@ data class EntregaRequest(
     val dniReceptor:  String,
     val observaciones:String
 )
+
+// ── Producto activo (para agregar extras al pedido) ───────────────────────────
+data class ProductoActivo(
+    val idProducto:     Int,
+    val nombre:         String,
+    val precioUnitario: Double
+)
+
+sealed class ProductosResult {
+    data class Success(val productos: List<ProductoActivo>) : ProductosResult()
+    data class Error(val mensaje: String) : ProductosResult()
+}

@@ -79,16 +79,21 @@ class DeliveryViewModel(
         }
     }
 
+    // ── Item individual actualizado (para refresh quirúrgico del adapter) ─────
+    private val _productoActualizado = MutableLiveData<Product>()
+    val productoActualizado: MutableLiveData<Product> get() = _productoActualizado
+
     /**
      * Ajusta la cantidad entregada de un producto (+1).
-     * No puede superar la cantidad original del pedido.
+     * Sin límite superior — puede entregar más de lo pedido originalmente.
      */
     fun incrementCounter(product: Product) {
         val lista = _productos.value?.toMutableList() ?: return
         val idx   = lista.indexOfFirst { it.idDetalle == product.idDetalle }
-        if (idx >= 0 && lista[idx].cantidadEntregada < lista[idx].quantity) {
+        if (idx >= 0) {
             lista[idx] = lista[idx].copy(cantidadEntregada = lista[idx].cantidadEntregada + 1)
             _productos.postValue(lista)
+            _productoActualizado.postValue(lista[idx])
             recalcularTotal(lista)
         }
     }
@@ -103,9 +108,56 @@ class DeliveryViewModel(
         if (idx >= 0 && lista[idx].cantidadEntregada > 0) {
             lista[idx] = lista[idx].copy(cantidadEntregada = lista[idx].cantidadEntregada - 1)
             _productos.postValue(lista)
+            _productoActualizado.postValue(lista[idx])
             recalcularTotal(lista)
         }
     }
+
+    /**
+     * Agrega un producto extra al pedido (no estaba en el pedido original).
+     * Decisión: usamos idDetalle = -1 * idProducto como identificador temporal
+     * negativo para distinguirlos de los ítems reales de BD.
+     * El backend los identifica por id_detalle <= 0 e inserta un nuevo detalle.
+     */
+    fun agregarProductoExtra(producto: ProductoActivo) {
+        val lista = _productos.value?.toMutableList() ?: mutableListOf()
+        // Si ya fue agregado antes, solo incrementa cantidad
+        val existente = lista.indexOfFirst { it.idProducto == producto.idProducto && it.idDetalle < 0 }
+        if (existente >= 0) {
+            lista[existente] = lista[existente].copy(
+                cantidadEntregada = lista[existente].cantidadEntregada + 1
+            )
+        } else {
+            lista.add(
+                Product(
+                    idDetalle         = -producto.idProducto,  // temporal negativo
+                    idProducto        = producto.idProducto,
+                    description       = producto.nombre + " (extra)",
+                    quantity          = 1,
+                    cantidadEntregada = 1,
+                    delivered         = false,
+                    price             = producto.precioUnitario
+                )
+            )
+        }
+        _productos.postValue(lista)
+        recalcularTotal(lista)
+    }
+
+    /**
+     * Carga productos activos para el dialog de agregar extra.
+     */
+    fun cargarProductosActivos() {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) { repository.fetchProductosActivos() }
+            if (result is ProductosResult.Success) {
+                _productosActivos.postValue(result.productos)
+            }
+        }
+    }
+
+    private val _productosActivos = MutableLiveData<List<ProductoActivo>>()
+    val productosActivos: MutableLiveData<List<ProductoActivo>> get() = _productosActivos
 
     private fun recalcularTotal(lista: List<Product>) {
         val total = lista.sumOf { it.cantidadEntregada * it.price }

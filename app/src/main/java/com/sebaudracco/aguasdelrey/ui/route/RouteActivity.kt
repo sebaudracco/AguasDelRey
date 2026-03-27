@@ -45,9 +45,8 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
     }
 
     private fun initTasksList() {
+        // R3 FIX: orden natural ASC, sin reverseLayout ni stackFromEnd
         val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        layoutManager.reverseLayout = true
 
         val recycler = findViewById<RecyclerView>(R.id.recycler_tasks)
         recycler.layoutManager = layoutManager
