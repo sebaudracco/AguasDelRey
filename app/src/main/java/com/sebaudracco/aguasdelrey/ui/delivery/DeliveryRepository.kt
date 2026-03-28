@@ -1,11 +1,10 @@
 package com.sebaudracco.aguasdelrey.ui.delivery
 
 import android.content.Context
+import com.sebaudracco.aguasdelrey.data.ApiService
 import com.sebaudracco.aguasdelrey.data.model.Product
+import org.json.JSONArray
 import org.json.JSONObject
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
  * DeliveryRepository — capa de acceso a datos para el módulo de entrega.
@@ -15,180 +14,131 @@ import java.net.URL
  * cómo se obtienen los datos (HTTP, BD local, caché). Esa responsabilidad
  * es del Repository. El ViewModel solo llama métodos del repo y expone
  * LiveData a la Activity.
- * Este patrón es el recomendado por Google para Android y lo que se enseña
- * en Ingeniería de Software como "separación de responsabilidades" (SRP).
  *
- * Sobre el uso de HttpURLConnection en lugar de Retrofit:
- * El proyecto ya usa HttpURLConnection en DataRepository para /api/rutas,
- * entonces mantenemos consistencia tecnológica. Si en el futuro se migra
- * a Retrofit, este es el único archivo que cambia.
+ * Decisión sobre HttpURLConnection vs ApiService:
+ * La versión anterior manejaba HTTP directamente con HttpURLConnection y leía
+ * el token de SharedPreferences("auth") con clave "jwt_token".
+ * El problema: el token se guarda en "aguadelrey_prefs" con clave "jwt_token"
+ * (ver LoginRepository). Al usar SharedPreferences("auth") llegaba vacío → 401.
+ *
+ * Solución: usar ApiService que ya existe en el proyecto y ya resuelve
+ * correctamente el token via LoginRepository.getToken() — misma fuente
+ * de verdad que usa DataRepository para /api/rutas (que sí funcionaba).
+ * Toda la lógica HTTP (timeouts, headers, error stream) sigue existiendo
+ * dentro de ApiService — no se eliminó, se centralizó.
  */
 class DeliveryRepository(private val context: Context) {
 
-    companion object {
-        private const val BASE_URL = "https://administracion-aguadelrey.onrender.com/api"
-    }
-
     /**
+     * GET /api/pedido?id_pedido=X
      * Obtiene el pedido con su detalle de productos desde la API.
      * Se ejecuta en un hilo IO (llamar desde viewModelScope con Dispatchers.IO).
+     *
+     * ApiService.get() internamente:
+     * - Lee el token via LoginRepository.getToken() desde "aguadelrey_prefs"
+     * - Abre HttpURLConnection con Authorization: Bearer <token>
+     * - Maneja connectTimeout=15000, readTimeout=15000
+     * - Parsea errorStream si el código no es 200
+     * - Lanza excepción si ok=false en la respuesta
      */
     fun fetchPedido(idPedido: Int): PedidoResult {
-        val sharedPref = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-        val token = sharedPref.getString("jwt_token", "") ?: ""
-
-        val url = URL("$BASE_URL/pedido?id_pedido=$idPedido")
-        val conn = url.openConnection() as HttpURLConnection
         return try {
-            conn.requestMethod = "GET"
-            conn.setRequestProperty("Authorization", "Bearer $token")
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.connectTimeout = 10000
-            conn.readTimeout    = 10000
+            val json    = ApiService.get(context, "/api/pedido?id_pedido=$idPedido")
+            val pedidoJ = json.getJSONObject("pedido")
+            val arr     = pedidoJ.getJSONArray("productos")
+            val productos = mutableListOf<Product>()
 
-            val code = conn.responseCode
-            val body = if (code == 200) {
-                conn.inputStream.bufferedReader().readText()
-            } else {
-                conn.errorStream?.bufferedReader()?.readText() ?: ""
-            }
-
-            if (code == 200) {
-                val json     = JSONObject(body)
-                val pedidoJ  = json.getJSONObject("pedido")
-                val productos = mutableListOf<Product>()
-                val arr      = pedidoJ.getJSONArray("productos")
-                for (i in 0 until arr.length()) {
-                    val p = arr.getJSONObject(i)
-                    val qty = p.getInt("cantidad")
-                    productos.add(
-                        Product(
-                            idDetalle        = p.getInt("id_detalle"),
-                            idProducto       = p.getInt("id_producto"),
-                            description      = p.getString("nombre"),
-                            quantity         = qty,
-                            cantidadEntregada= qty,   // por defecto entrega todo
-                            delivered        = false,
-                            price            = p.getDouble("precio_unitario")
-                        )
+            for (i in 0 until arr.length()) {
+                val p   = arr.getJSONObject(i)
+                val qty = p.getInt("cantidad")
+                productos.add(
+                    Product(
+                        idDetalle         = p.getInt("id_detalle"),
+                        idProducto        = p.getInt("id_producto"),
+                        description       = p.getString("nombre"),
+                        quantity          = qty,
+                        cantidadEntregada = qty,   // por defecto entrega todo
+                        delivered         = false,
+                        price             = p.getDouble("precio_unitario")
                     )
-                }
-                PedidoResult.Success(
-                    productos         = productos,
-                    clienteNombre     = pedidoJ.optString("cliente_nombre", ""),
-                    clienteDireccion  = pedidoJ.optString("cliente_direccion", ""),
-                    total             = pedidoJ.optDouble("total", 0.0),
-                    observaciones     = pedidoJ.optString("observaciones_cliente", "")
                 )
-            } else {
-                val errJson = runCatching { JSONObject(body).getString("error") }.getOrDefault("Error $code")
-                PedidoResult.Error(errJson)
             }
+
+            PedidoResult.Success(
+                productos        = productos,
+                clienteNombre    = pedidoJ.optString("cliente_nombre", ""),
+                clienteDireccion = pedidoJ.optString("cliente_direccion", ""),
+                total            = pedidoJ.optDouble("total", 0.0),
+                observaciones    = pedidoJ.optString("observaciones_cliente", "")
+            )
         } catch (e: Exception) {
             PedidoResult.Error(e.message ?: "Error de conexión")
-        } finally {
-            conn.disconnect()
         }
     }
 
     /**
+     * GET /api/productos
      * Obtiene productos activos para agregar extras al pedido.
+     * Se ejecuta en un hilo IO.
      */
     fun fetchProductosActivos(): ProductosResult {
-        val sharedPref = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-        val token = sharedPref.getString("jwt_token", "") ?: ""
-        val url  = URL("$BASE_URL/productos")
-        val conn = url.openConnection() as HttpURLConnection
         return try {
-            conn.requestMethod = "GET"
-            conn.setRequestProperty("Authorization", "Bearer $token")
-            conn.connectTimeout = 10000
-            conn.readTimeout    = 10000
-            val code = conn.responseCode
-            val body = if (code == 200) conn.inputStream.bufferedReader().readText()
-            else conn.errorStream?.bufferedReader()?.readText() ?: ""
-            if (code == 200) {
-                val arr  = org.json.JSONObject(body).getJSONArray("productos")
-                val lista = mutableListOf<ProductoActivo>()
-                for (i in 0 until arr.length()) {
-                    val p = arr.getJSONObject(i)
-                    lista.add(ProductoActivo(
+            val json = ApiService.get(context, "/api/productos")
+            val arr  = json.getJSONArray("productos")
+            val lista = mutableListOf<ProductoActivo>()
+
+            for (i in 0 until arr.length()) {
+                val p = arr.getJSONObject(i)
+                lista.add(
+                    ProductoActivo(
                         idProducto     = p.getInt("id_producto"),
                         nombre         = p.getString("nombre"),
                         precioUnitario = p.getDouble("precio_unitario")
-                    ))
-                }
-                ProductosResult.Success(lista)
-            } else {
-                ProductosResult.Error("Error $code")
+                    )
+                )
             }
+            ProductosResult.Success(lista)
         } catch (e: Exception) {
             ProductosResult.Error(e.message ?: "Error de conexión")
-        } finally {
-            conn.disconnect()
         }
     }
 
     /**
+     * POST /api/entrega
      * Registra la entrega en el servidor.
      * Se ejecuta en un hilo IO.
+     *
+     * Nota sobre id_producto en el body: se incluye para que el backend
+     * pueda hacer INSERT cuando el id_detalle es negativo (producto extra
+     * que el repartidor agregó en campo y no estaba en el pedido original).
      */
     fun confirmarEntrega(request: EntregaRequest): EntregaResult {
-        val sharedPref = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-        val token = sharedPref.getString("jwt_token", "") ?: ""
-
-        val url  = URL("$BASE_URL/entrega")
-        val conn = url.openConnection() as HttpURLConnection
         return try {
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Authorization", "Bearer $token")
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.doOutput      = true
-            conn.connectTimeout= 10000
-            conn.readTimeout   = 10000
-
-            // Construir JSON del body
-            val productosArr = org.json.JSONArray()
+            val productosArr = JSONArray()
             request.productos.forEach { prod ->
                 val obj = JSONObject()
                 obj.put("id_detalle",         prod.idDetalle)
+                obj.put("id_producto",        prod.idProducto)   // necesario para extras
                 obj.put("cantidad_entregada", prod.cantidadEntregada)
                 productosArr.put(obj)
             }
-            val bodyJson = JSONObject()
-            bodyJson.put("id_pedido",     request.idPedido)
-            bodyJson.put("productos",     productosArr)
-            bodyJson.put("monto_cobrado", request.montoCobrado)
-            bodyJson.put("dni_receptor",  request.dniReceptor)
-            bodyJson.put("observaciones", request.observaciones)
 
-            val writer = OutputStreamWriter(conn.outputStream)
-            writer.write(bodyJson.toString())
-            writer.flush()
+            val body = JSONObject()
+            body.put("id_pedido",     request.idPedido)
+            body.put("productos",     productosArr)
+            body.put("monto_cobrado", request.montoCobrado)
+            body.put("dni_receptor",  request.dniReceptor)
+            body.put("observaciones", request.observaciones)
 
-            val code = conn.responseCode
-            val body = if (code == 200) {
-                conn.inputStream.bufferedReader().readText()
-            } else {
-                conn.errorStream?.bufferedReader()?.readText() ?: ""
-            }
-
-            if (code == 200) {
-                val json = JSONObject(body)
-                EntregaResult.Success(json.optDouble("total_final", 0.0))
-            } else {
-                val errJson = runCatching { JSONObject(body).getString("error") }.getOrDefault("Error $code")
-                EntregaResult.Error(errJson)
-            }
+            val json = ApiService.post(context, "/api/entrega", body)
+            EntregaResult.Success(json.optDouble("total_final", 0.0))
         } catch (e: Exception) {
             EntregaResult.Error(e.message ?: "Error de conexión")
-        } finally {
-            conn.disconnect()
         }
     }
 }
 
-// ── Data classes de resultado (sealed classes para manejar éxito/error) ───────
+// ── Sealed classes de resultado ───────────────────────────────────────────────
 // Decisión: sealed class en lugar de nullable o exceptions.
 // El ViewModel puede hacer un 'when' exhaustivo sin riesgo de olvidar el caso error.
 
@@ -208,13 +158,13 @@ sealed class EntregaResult {
     data class Error(val mensaje: String) : EntregaResult()
 }
 
-// ── Request model ──────────────────────────────────────────────────────────────
+// ── Request model ─────────────────────────────────────────────────────────────
 data class EntregaRequest(
-    val idPedido:     Int,
-    val productos:    List<com.sebaudracco.aguasdelrey.data.model.Product>,
-    val montoCobrado: Double,
-    val dniReceptor:  String,
-    val observaciones:String
+    val idPedido:      Int,
+    val productos:     List<com.sebaudracco.aguasdelrey.data.model.Product>,
+    val montoCobrado:  Double,
+    val dniReceptor:   String,
+    val observaciones: String
 )
 
 // ── Producto activo (para agregar extras al pedido) ───────────────────────────
