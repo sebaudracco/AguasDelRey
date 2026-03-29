@@ -54,13 +54,17 @@ class DeliveryViewModel(
 
     /**
      * Carga los productos del pedido desde la API.
-     * Llamar al inicializar la Activity, una vez que se recibió idPedido.
+     * Guard: si ya hay productos cargados para este mismo pedido, no recarga.
+     * Esto evita la doble llamada cuando la Activity se recrea.
      */
     fun cargarPedido() {
         if (idPedido <= 0) {
             _error.postValue("ID de pedido inválido")
             return
         }
+        // Si ya tenemos productos de este pedido, no volvemos a cargar
+        if (!_productos.value.isNullOrEmpty()) return
+
         _loading.postValue(true)
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
