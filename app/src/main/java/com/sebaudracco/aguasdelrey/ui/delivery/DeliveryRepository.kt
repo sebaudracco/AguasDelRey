@@ -124,11 +124,12 @@ class DeliveryRepository(private val context: Context) {
             }
 
             val body = JSONObject()
-            body.put("id_pedido",     request.idPedido)
-            body.put("productos",     productosArr)
-            body.put("monto_cobrado", request.montoCobrado)
-            body.put("dni_receptor",  request.dniReceptor)
-            body.put("observaciones", request.observaciones)
+            body.put("id_pedido",      request.idPedido)
+            body.put("productos",      productosArr)
+            body.put("monto_cobrado",  request.montoCobrado)
+            body.put("dni_receptor",   request.dniReceptor)
+            body.put("bidones_vacios", request.bidonesVacios)
+            body.put("observaciones",  request.observaciones)
 
             val json = ApiService.post(context, "/api/entrega", body)
             EntregaResult.Success(json.optDouble("total_final", 0.0))
@@ -164,6 +165,7 @@ data class EntregaRequest(
     val productos:     List<com.sebaudracco.aguasdelrey.data.model.Product>,
     val montoCobrado:  Double,
     val dniReceptor:   String,
+    val bidonesVacios: Int = 0,
     val observaciones: String
 )
 

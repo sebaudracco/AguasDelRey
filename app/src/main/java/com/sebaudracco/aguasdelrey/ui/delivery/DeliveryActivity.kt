@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,7 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
         observeViewModel()
         setupButtons()
         setupDniFormatter()
+        setupBidonesSpinner()
     }
 
     private fun initViewModel() {
@@ -86,13 +88,10 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             }
         }
 
-        // Productos cargados desde API → actualizar lista completa
         viewModel.productos.observe(this) { productos ->
             adapter.updateProductos(productos.toMutableList())
         }
 
-        // Fix P3: refresh quirúrgico por ítem cuando cambia +/-
-        // sin redibujar toda la lista (evita parpadeo)
         viewModel.productoActualizado.observe(this) { producto ->
             adapter.updateProductoEnPosicion(producto)
         }
@@ -101,7 +100,6 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             binding.tvAmount.text = "$${"%.2f".format(total)}"
         }
 
-        // Botón habilitado cuando al menos 1 producto está marcado como entregado
         viewModel.delivered.observe(this) { entregados ->
             binding.btnSave.isEnabled = entregados.isNotEmpty()
         }
@@ -119,7 +117,6 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
     private fun setupButtons() {
         binding.btnSave.isEnabled = false
 
-        // ✕ — cancelar entrega con confirmación
         binding.ivCancel.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Cancelar entrega")
@@ -130,33 +127,65 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
                 .show()
         }
 
-        // + — agregar producto extra al pedido
         binding.ivAddProduct.setOnClickListener {
             mostrarDialogAgregarProducto()
         }
 
-        // Finalizar pedido
         binding.btnSave.setOnClickListener {
-            // Monto no obligatorio — si está vacío se envía 0
-            val monto = binding.etAmountCobro.text.toString().toDoubleOrNull() ?: 0.0
-            // DNI no obligatorio — se envía vacío si no se ingresó
-            val dni   = binding.etDni.text.toString().replace(".", "").trim()
-
-            AlertDialog.Builder(this)
-                .setTitle("Confirmar entrega")
-                .setMessage("¿Confirmar la entrega?\nTotal: $${"%.2f".format(viewModel.totalPedido.value ?: 0.0)}")
-                .setCancelable(false)
-                .setPositiveButton("Confirmar") { _, _ ->
-                    viewModel.confirmarEntrega(monto, dni, "")
-                }
-                .setNegativeButton("Cancelar", null)
-                .show()
+            mostrarDialogConfirmacion()
         }
     }
 
     /**
+     * Dialog de confirmación que muestra los productos con switch activado.
+     * Decisión: en lugar de mostrar solo el total (que puede confundir al repartidor),
+     * mostramos la lista de lo que realmente se confirmó entregar — más transparente
+     * y evita errores de confirmación accidental.
+     */
+    private fun mostrarDialogConfirmacion() {
+        val monto  = binding.etAmountCobro.text.toString().toDoubleOrNull() ?: 0.0
+        val dni    = binding.etDni.text.toString().replace(".", "").trim()
+        val bidones= binding.spinnerBidones.selectedItem.toString().toIntOrNull() ?: 0
+
+        // Construir resumen de productos entregados (solo los con switch activado)
+        val entregados = viewModel.delivered.value ?: emptyList()
+        val resumen = buildString {
+            appendLine("Productos entregados:")
+            appendLine()
+            entregados.forEach { prod ->
+                appendLine("• ${prod.description} x${prod.cantidadEntregada}")
+            }
+            appendLine()
+            appendLine("Total: $${"%.2f".format(viewModel.totalPedido.value ?: 0.0)}")
+            if (bidones > 0) appendLine("Bidones vacíos: $bidones")
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Confirmar entrega")
+            .setMessage(resumen)
+            .setCancelable(false)
+            .setPositiveButton("Confirmar") { _, _ ->
+                viewModel.confirmarEntrega(monto, dni, bidones, "")
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Spinner con valores 0-20 para bidones vacíos devueltos.
+     * Decisión: rango 0-20 basado en casos reales de reparto de agua.
+     * Spinner evita errores de tipeo del repartidor en campo.
+     */
+    private fun setupBidonesSpinner() {
+        val valores = (0..20).map { it.toString() }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, valores)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerBidones.adapter = adapter
+        binding.spinnerBidones.setSelection(0) // por defecto: 0 bidones
+    }
+
+    /**
      * Formatea el campo DNI como XX.XXX.XXX mientras se escribe.
-     * Enviamos solo dígitos al servidor — el formato es solo visual.
      */
     private fun setupDniFormatter() {
         binding.etDni.addTextChangedListener(object : TextWatcher {
@@ -178,17 +207,13 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
         })
     }
 
-    /**
-     * Dialog para seleccionar producto extra a agregar al pedido.
-     * Usa la lista precargada en cargarProductosActivos().
-     */
     private fun mostrarDialogAgregarProducto() {
         val productosActivos = viewModel.productosActivos.value
         if (productosActivos.isNullOrEmpty()) {
             Toast.makeText(this, "Cargando productos...", Toast.LENGTH_SHORT).show()
             return
         }
-        val nombres  = productosActivos.map {
+        val nombres = productosActivos.map {
             "${it.nombre} — $${"%.2f".format(it.precioUnitario)}"
         }.toTypedArray()
         var seleccion = 0
@@ -212,3 +237,4 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
         viewModel.setOnUncheckProducts(deliveredProducts)
     }
 }
+

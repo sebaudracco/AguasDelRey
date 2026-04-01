@@ -178,8 +178,10 @@ class DeliveryViewModel(
 
     /**
      * Confirma la entrega enviando los datos al servidor.
+     * bidonesVacios: cantidad de bidones vacíos devueltos por el cliente,
+     * se guarda en pedido.bidones_vacios en BD.
      */
-    fun confirmarEntrega(montoCobrado: Double, dniReceptor: String, observaciones: String) {
+    fun confirmarEntrega(montoCobrado: Double, dniReceptor: String, bidonesVacios: Int, observaciones: String) {
         val prods = _productos.value ?: return
         _loading.postValue(true)
         viewModelScope.launch {
@@ -190,6 +192,7 @@ class DeliveryViewModel(
                         productos     = prods,
                         montoCobrado  = montoCobrado,
                         dniReceptor   = dniReceptor,
+                        bidonesVacios = bidonesVacios,
                         observaciones = observaciones
                     )
                 )

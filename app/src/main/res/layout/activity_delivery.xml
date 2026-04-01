@@ -17,11 +17,6 @@
         android:layout_height="match_parent"
         android:background="@color/white">
 
-        <!--
-            FIX: descendantFocusability cambiado de blocksDescendants a beforeDescendants.
-            blocksDescendants impedía que los EditText (et_amount_cobro, et_dni)
-            recibieran foco y pudieran ser editados por el usuario.
-        -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -173,7 +168,7 @@
                 app:layout_constraintEnd_toEndOf="@id/iv_menu_profile_banner"
                 app:layout_constraintTop_toTopOf="@id/iv_menu_profile_banner" />
 
-            <!-- Sección: Entrega del pedido -->
+            <!-- Entrega del pedido -->
             <TextView
                 android:id="@+id/tv_menu_account_agora"
                 style="@style/text_headline_s.black1"
@@ -196,7 +191,7 @@
                 android:layout_height="match_parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_account_agora" />
 
-            <!-- Sección: Total del pedido (calculado automáticamente) -->
+            <!-- Total calculado automáticamente -->
             <TextView
                 android:id="@+id/tv_menu_amount"
                 style="@style/text_headline_s.black1"
@@ -227,12 +222,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/recycler_deliver" />
 
-            <!--
-                Sección: Recibí — monto cobrado al cliente.
-                FIX: se eliminaron tv_cobro y tv_amount_sign que tapaban el EditText
-                y mostraban un valor hardcodeado del string resource.
-                Ahora solo existe el EditText editable con hint.
-            -->
+            <!-- Recibí: monto cobrado al cliente -->
             <TextView
                 android:id="@+id/tv_menu_cobro"
                 style="@style/text_headline_s.black1"
@@ -266,7 +256,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_amount" />
 
-            <!-- Sección: Responsable / DNI -->
+            <!-- Responsable: DNI de quien recibe -->
             <TextView
                 android:id="@+id/tv_person_doc"
                 style="@style/text_headline_s.black1"
@@ -300,6 +290,40 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_cobro" />
 
+            <!--
+                Bidones vacíos devueltos.
+                Decisión: Spinner (dropdown) en lugar de EditText libre porque
+                el repartidor solo puede devolver un número discreto de bidones
+                y el dropdown elimina errores de tipeo en campo.
+                El rango 0-20 cubre casos reales de reparto de agua.
+            -->
+            <TextView
+                android:id="@+id/tv_bidones_vacios"
+                style="@style/text_headline_s.black1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_dp_4_6"
+                android:background="@color/background_light_2"
+                android:paddingStart="@dimen/default_dp_4_6"
+                android:paddingTop="@dimen/default_dp_4_4"
+                android:paddingEnd="@dimen/default_dp_4_6"
+                android:paddingBottom="@dimen/default_dp_4_4"
+                android:text="Bidones vacíos"
+                app:layout_constraintEnd_toStartOf="@+id/spinner_bidones"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_person_doc" />
+
+            <Spinner
+                android:id="@+id/spinner_bidones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_dp_4_6"
+                android:minWidth="80dp"
+                android:paddingStart="@dimen/default_dp_4_6"
+                android:paddingEnd="@dimen/default_dp_4_6"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_person_doc" />
+
             <Button
                 android:id="@+id/btn_save"
                 style="@style/text_caption_l"
@@ -307,7 +331,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/devlivey_btn_ok"
-                app:layout_constraintTop_toBottomOf="@id/tv_person_doc" />
+                app:layout_constraintTop_toBottomOf="@id/tv_bidones_vacios" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
