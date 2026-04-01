@@ -155,9 +155,10 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             entregados.forEach { prod ->
                 appendLine("• ${prod.description} x${prod.cantidadEntregada}")
             }
-            appendLine()
-            appendLine("Total: $${"%.2f".format(viewModel.totalPedido.value ?: 0.0)}")
-            if (bidones > 0) appendLine("Bidones vacíos: $bidones")
+            if (bidones > 0) {
+                appendLine()
+                appendLine("Bidones vacíos: $bidones")
+            }
         }
 
         AlertDialog.Builder(this)
