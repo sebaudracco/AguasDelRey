@@ -1,16 +1,79 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.AguasDelRey" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <!-- Secondary brand color. -->
+    <!--
+        Decisión: mantenemos este archivo porque Android lo requiere,
+        pero heredamos del tema Light para que la app ignore el dark mode
+        del sistema y siempre se vea igual.
+        forceDarkAllowed=false previene que Android fuerce inversión
+        de colores automática sobre los layouts.
+    -->
+    <style name="Theme.AguasDelRey" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Mismos colores que el tema light — app siempre en modo claro -->
+        <item name="colorPrimary">@color/teal_200</item>
+        <item name="colorPrimaryVariant">@color/teal_700</item>
+        <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
+
+    <style name="Theme.AguasDelRey.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.AguasDelRey.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.AguasDelRey.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <!-- TEXT-LINK -->
+    <style name="text_link_s" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_medium</item>
+        <item name="android:textSize">@dimen/default_sp_4_3</item>
+    </style>
+
+    <style name="text_link_m" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_semibold</item>
+        <item name="android:textSize">@dimen/default_sp_2_7</item>
+    </style>
+
+    <!-- TEXT-CAPTION -->
+    <style name="text_caption_s" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_medium</item>
+        <item name="android:textSize">@dimen/default_sp_4_3</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <style name="text_caption_l" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_medium</item>
+        <item name="android:textSize">@dimen/default_sp_2_9</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="text_title_l.black1" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_bold</item>
+        <item name="android:textSize">@dimen/default_sp_2_11</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="text_headline_s" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@raw/gilroy_semibold</item>
+        <item name="android:textSize">@dimen/default_sp_2_9</item>
+    </style>
+
+    <style name="text_headline_s.black1">
+        <item name="android:textColor">@color/black1</item>
+    </style>
+
+    <!-- END TEXT STYLES -->
+    <dimen name="default_sp_4_3">14sp</dimen>
+    <dimen name="default_sp_2_7">16sp</dimen>
+    <dimen name="default_sp_2_9">20sp</dimen>
+    <dimen name="default_sp_2_11">28sp</dimen>
+
+    <style name="GreenFilledButton">
+        <item name="android:background">@color/color_green</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 </resources>
