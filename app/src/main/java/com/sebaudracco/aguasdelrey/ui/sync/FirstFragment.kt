@@ -33,7 +33,7 @@ class FirstFragment : Fragment() {
     private val autoAvanceHandler = Handler(Looper.getMainLooper())
     private val autoAvanceRunnable = Runnable { navegarASelectRuta() }
 
-    private var segundosRestantes = 3
+    private var segundosRestantes = 5
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
