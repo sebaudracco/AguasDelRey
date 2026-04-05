@@ -41,21 +41,12 @@ class SyncActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // FAB: sincronizar manualmente
-        binding.fab.setOnClickListener {
-            ejecutarSync()
-        }
+        binding.fab.setOnClickListener { ejecutarSync() }
 
-        // Al abrir SyncActivity → sincronizar automáticamente
         ejecutarSync()
     }
 
-    /**
-     * Ejecuta la sincronización real contra /api/rutas.
-     * Éxito → guarda datos → navega a SelectRutaActivity
-     * Error → muestra dialog de error → queda en SyncActivity
-     */
-    private fun ejecutarSync() {
+    fun ejecutarSync() {
         mostrarLoadingDialog()
         MainScope().launch {
             try {
@@ -64,30 +55,34 @@ class SyncActivity : AppCompatActivity() {
                 }
                 DataRepository.setCache(rutas)
 
-                // Guardar fecha y resumen de rutas en SharedPreferences
                 val ahora   = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
                 val resumen = rutas.joinToString("\n") { "• ${it.nombre}" }
                     .ifEmpty { "Sin rutas disponibles para hoy" }
 
                 getSharedPreferences(HomeFragment.PREFS_SYNC, Context.MODE_PRIVATE)
                     .edit()
-                    .putString(HomeFragment.KEY_LAST_SYNC,      ahora)
-                    .putString(HomeFragment.KEY_RUTAS_RESUMEN,  resumen)
+                    .putString(HomeFragment.KEY_LAST_SYNC,     ahora)
+                    .putString(HomeFragment.KEY_RUTAS_RESUMEN, resumen)
                     .apply()
 
                 ocultarLoadingDialog()
 
-                // Sync exitosa → navegar a SelectRutaActivity
-                val intent = Intent(this@SyncActivity, SelectRutaActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                /*
+                 * Decisión de navegación:
+                 * En lugar de ir directo a SelectRutaActivity, navegamos a FirstFragment
+                 * que muestra el resultado de la sync con un botón "Continuar" +
+                 * auto-avance de 3 segundos.
+                 * Esto da al repartidor la oportunidad de leer qué rutas se sincronizaron
+                 * sin forzarlo a leerlo si está apurado.
+                 */
                 setResult(Activity.RESULT_OK)
-                startActivity(intent)
-                finish()
+                val navController = findNavController(R.id.nav_host_fragment_content_sync)
+                if (navController.currentDestination?.id != R.id.FirstFragment) {
+                    navController.navigate(R.id.FirstFragment)
+                }
 
             } catch (e: Exception) {
                 ocultarLoadingDialog()
-
-                // Sync fallida → mostrar error → quedarse en SyncActivity
                 AlertDialog.Builder(this@SyncActivity)
                     .setTitle("Error de sincronización")
                     .setMessage(
@@ -101,6 +96,13 @@ class SyncActivity : AppCompatActivity() {
                     .create().show()
             }
         }
+    }
+
+    fun navegarASelectRuta() {
+        val intent = Intent(this, SelectRutaActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        finish()
     }
 
     private fun mostrarLoadingDialog() {
