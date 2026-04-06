@@ -324,6 +324,43 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_person_doc" />
 
+
+            <!-- Observaciones del repartidor — texto libre -->
+            <TextView
+                android:id="@+id/tv_label_observaciones"
+                style="@style/text_headline_s.black1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_dp_4_6"
+                android:background="@color/background_light_2"
+                android:paddingStart="@dimen/default_dp_4_6"
+                android:paddingTop="@dimen/default_dp_4_4"
+                android:paddingEnd="@dimen/default_dp_4_6"
+                android:paddingBottom="@dimen/default_dp_4_4"
+                android:text="Observaciones"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_bidones_vacios" />
+
+            <EditText
+                android:id="@+id/et_observaciones"
+                style="@style/text_headline_s.black1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_dp_4_2"
+                android:background="@color/background_light_2"
+                android:hint="Ingrese observaciones (opcional)"
+                android:inputType="textMultiLine"
+                android:minLines="2"
+                android:maxLines="4"
+                android:paddingStart="@dimen/default_dp_4_6"
+                android:paddingTop="@dimen/default_dp_4_4"
+                android:paddingEnd="@dimen/default_dp_4_6"
+                android:paddingBottom="@dimen/default_dp_4_4"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_label_observaciones" />
+
             <Button
                 android:id="@+id/btn_save"
                 style="@style/text_caption_l"
@@ -331,7 +368,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/devlivey_btn_ok"
-                app:layout_constraintTop_toBottomOf="@id/tv_bidones_vacios" />
+                app:layout_constraintTop_toBottomOf="@id/et_observaciones" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -68,7 +68,6 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
     }
 
     private fun observeViewModel() {
-
         viewModel.loading.observe(this) { isLoading ->
             if (isLoading) {
                 binding.shimmerUser.visibility     = View.VISIBLE
@@ -117,6 +116,12 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
     private fun setupButtons() {
         binding.btnSave.isEnabled = false
 
+        // Corrección: iv_close (←) vuelve atrás
+        binding.ivClose.setOnClickListener {
+            finish()
+        }
+
+        // iv_cancel (✕) cancela la entrega con confirmación
         binding.ivCancel.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Cancelar entrega")
@@ -127,6 +132,7 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
                 .show()
         }
 
+        // iv_add_product (+) agrega producto extra
         binding.ivAddProduct.setOnClickListener {
             mostrarDialogAgregarProducto()
         }
@@ -136,18 +142,12 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
         }
     }
 
-    /**
-     * Dialog de confirmación que muestra los productos con switch activado.
-     * Decisión: en lugar de mostrar solo el total (que puede confundir al repartidor),
-     * mostramos la lista de lo que realmente se confirmó entregar — más transparente
-     * y evita errores de confirmación accidental.
-     */
     private fun mostrarDialogConfirmacion() {
-        val monto  = binding.etAmountCobro.text.toString().toDoubleOrNull() ?: 0.0
-        val dni    = binding.etDni.text.toString().replace(".", "").trim()
-        val bidones= binding.spinnerBidones.selectedItem.toString().toIntOrNull() ?: 0
+        val monto       = binding.etAmountCobro.text.toString().toDoubleOrNull() ?: 0.0
+        val dni         = binding.etDni.text.toString().replace(".", "").trim()
+        val bidones     = binding.spinnerBidones.selectedItem.toString().toIntOrNull() ?: 0
+        val observaciones = binding.etObservaciones.text.toString().trim()
 
-        // Construir resumen de productos entregados (solo los con switch activado)
         val entregados = viewModel.delivered.value ?: emptyList()
         val resumen = buildString {
             appendLine("Productos entregados:")
@@ -159,6 +159,10 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
                 appendLine()
                 appendLine("Bidones vacíos: $bidones")
             }
+            if (observaciones.isNotEmpty()) {
+                appendLine()
+                appendLine("Obs: $observaciones")
+            }
         }
 
         AlertDialog.Builder(this)
@@ -166,28 +170,20 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             .setMessage(resumen)
             .setCancelable(false)
             .setPositiveButton("Confirmar") { _, _ ->
-                viewModel.confirmarEntrega(monto, dni, bidones, "")
+                viewModel.confirmarEntrega(monto, dni, bidones, observaciones)
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    /**
-     * Spinner con valores 0-20 para bidones vacíos devueltos.
-     * Decisión: rango 0-20 basado en casos reales de reparto de agua.
-     * Spinner evita errores de tipeo del repartidor en campo.
-     */
     private fun setupBidonesSpinner() {
         val valores = (0..20).map { it.toString() }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, valores)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerBidones.adapter = adapter
-        binding.spinnerBidones.setSelection(0) // por defecto: 0 bidones
+        binding.spinnerBidones.setSelection(0)
     }
 
-    /**
-     * Formatea el campo DNI como XX.XXX.XXX mientras se escribe.
-     */
     private fun setupDniFormatter() {
         binding.etDni.addTextChangedListener(object : TextWatcher {
             private var isFormatting = false

@@ -1,20 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Cambios respecto al original:
-    R2: tv_adress_value tenía android:layout_marginEnd="208dp" hardcodeado que cortaba
-        el texto. Se reemplaza por constraints correctos contra iv_task_client.
-    R2: tv_stage (label "Domicilio") también se corregía el constraint.
-    General: se limpia layout_marginEnd incorrecto en tv_adress_value.
--->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/route_client"
-    android:bottomLeftRadius="7dp"
-    android:bottomRightRadius="7dp"
-    android:topLeftRadius="7dp"
-    android:topRightRadius="7dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -28,7 +17,6 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"/>
 
-    <!-- Nombre del cliente — se extiende hasta antes del ícono de casa -->
     <TextView
         android:id="@+id/tv_client_value"
         android:layout_width="0dp"
@@ -57,11 +45,6 @@
         app:layout_constraintEnd_toStartOf="@id/iv_task_client"
         app:layout_constraintTop_toBottomOf="@id/tv_client_value"/>
 
-    <!--
-        R2 FIX: layout_width="0dp" con constraints Start=parent y End=iv_task_client
-        garantiza que el texto use todo el espacio disponible sin cortarse.
-        Antes tenía layout_marginEnd="208dp" hardcodeado que no tiene sentido.
-    -->
     <TextView
         android:id="@+id/tv_adress_value"
         style="@style/text_caption_s"
@@ -154,6 +137,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginStart="16dp"/>
 
+    <!-- Tipo de cliente (izquierda) -->
     <TextView
         android:id="@+id/tv_physical_progress"
         style="@style/text_caption_s"
@@ -195,6 +179,32 @@
         app:layout_constraintEnd_toEndOf="@id/iv_task_client"
         app:layout_constraintStart_toStartOf="@id/iv_task_client"/>
 
+    <!--
+        Botón "Ausente" — nuevo.
+        Decisión: va entre "Entregar" y el lado izquierdo, en la fila inferior.
+        Usa color naranja/warning para distinguirlo visualmente de "Entregar"
+        (verde) — el repartidor debe distinguirlos rápido en campo.
+        El click lo maneja TasksAdapter a través de OnClickListener.
+    -->
+    <TextView
+        android:id="@+id/tv_ausente"
+        style="@style/text_caption_s"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:padding="8dp"
+        android:text="Ausente"
+        android:textColor="@color/design_default_color_error"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toStartOf="@+id/tv_complete_task"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_idle_hours"/>
+
+    <!-- Botón "Entregar" (derecha) -->
     <TextView
         android:id="@+id/tv_complete_task"
         style="@style/text_caption_s"

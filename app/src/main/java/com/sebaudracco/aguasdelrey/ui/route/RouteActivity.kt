@@ -3,6 +3,8 @@ package com.sebaudracco.aguasdelrey.ui.route
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +15,12 @@ import com.sebaudracco.aguasdelrey.data.model.ScheduleTask
 import com.sebaudracco.aguasdelrey.databinding.ActivityRouteBinding
 import com.sebaudracco.aguasdelrey.helpers.Constants
 import com.sebaudracco.aguasdelrey.ui.delivery.DeliveryActivity
+import com.sebaudracco.aguasdelrey.data.ApiService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
@@ -46,9 +54,7 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
     }
 
     private fun initTasksList() {
-        // R3 FIX: orden natural ASC, sin reverseLayout ni stackFromEnd
         val layoutManager = LinearLayoutManager(this)
-
         val recycler = findViewById<RecyclerView>(R.id.recycler_tasks)
         recycler.layoutManager = layoutManager
         adapter = TasksAdapter(tasks)
@@ -59,27 +65,70 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
         )
     }
 
+    // Entregar — navega a DeliveryActivity
     override fun onCheckProducts(scheduleTask: ScheduleTask, adapterPosition: Int) {
         val intent = Intent(this, DeliveryActivity::class.java)
-
-        // ── Cambio principal respecto al original ────────────────────────────
-        // Antes: se pasaba scheduleTask.id como EXTRA_USER_ID (incorrecto,
-        //        era el id de la tarea, no del cliente ni del pedido).
-        // Ahora: pasamos idPedido (de BD) y mantenemos EXTRA_USER_ID con el
-        //        taskId para que onActivityResult siga funcionando igual.
-        intent.putExtra(Constants.EXTRA_PEDIDO_ID,  scheduleTask.idPedido)   // NUEVO
-        intent.putExtra(Constants.EXTRA_CLIENTE_ID, scheduleTask.idCliente)  // NUEVO
-        intent.putExtra(Constants.EXTRA_USER_ID,    scheduleTask.id)         // existente — para RESULT_OK
+        intent.putExtra(Constants.EXTRA_PEDIDO_ID,  scheduleTask.idPedido)
+        intent.putExtra(Constants.EXTRA_CLIENTE_ID, scheduleTask.idCliente)
+        intent.putExtra(Constants.EXTRA_USER_ID,    scheduleTask.id)
         intent.putExtra(Constants.EXTRA_USER_NAME,  scheduleTask.clientDescription)
-
         startActivityForResult(intent, RC_EDIT_TASKS)
     }
 
     override fun onUnCheckProducts(scheduleTask: ScheduleTask) {}
 
+    /**
+     * Cliente ausente — dialog de confirmación → POST /api/ausencia.
+     * Decisión: el pedido queda en estado Pendiente (id_estado = 1),
+     * solo se registra fecha_ausencia. No cambia el estado.
+     */
+    override fun onClienteAusente(scheduleTask: ScheduleTask, adapterPosition: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Cliente ausente")
+            .setMessage(
+                "¿Confirmar que el cliente ${scheduleTask.clientDescription} " +
+                        "no se encontraba en el domicilio?\n\n" +
+                        "El pedido quedará pendiente y se registrará la fecha y hora del intento."
+            )
+            .setCancelable(true)
+            .setPositiveButton("Sí, confirmar") { _, _ ->
+                registrarAusencia(scheduleTask, adapterPosition)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun registrarAusencia(scheduleTask: ScheduleTask, adapterPosition: Int) {
+        MainScope().launch {
+            try {
+                val body = JSONObject()
+                body.put("id_pedido", scheduleTask.idPedido)
+
+                withContext(Dispatchers.IO) {
+                    ApiService.post(applicationContext, "/api/ausencia", body)
+                }
+
+                // Remover la parada de la lista — visualmente procesada
+                tasks.removeAt(adapterPosition)
+                adapter.notifyItemRemoved(adapterPosition)
+                Toast.makeText(
+                    this@RouteActivity,
+                    "Ausencia registrada para ${scheduleTask.clientDescription}",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@RouteActivity,
+                    "Error al registrar ausencia: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Sin cambios — sigue funcionando igual que antes
         if (requestCode == RC_EDIT_TASKS && resultCode == Activity.RESULT_OK) {
             val userId = data?.extras?.getString(Constants.EXTRA_USER_ID)
             tasks.removeIf { it.id == userId }
