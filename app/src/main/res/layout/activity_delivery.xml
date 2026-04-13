@@ -12,46 +12,70 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <!--
+        Barra superior fija — fuera del NestedScrollView.
+        Decisión: los botones iv_close, iv_cancel, iv_add_product estaban
+        dentro del NestedScrollView, que interceptaba los eventos táctiles
+        antes de que llegaran a las Views hijas. Al moverlos al nivel del
+        CoordinatorLayout quedan siempre visibles y reciben los toques correctamente.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolbar_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/default_dp_4_6"
+            android:layout_marginTop="@dimen/default_dp_4_6"
+            android:layout_marginBottom="@dimen/default_dp_4_6"
+            android:padding="@dimen/default_dp_5_2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_menu_left" />
+
+        <ImageView
+            android:id="@+id/iv_add_product"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/default_dp_4_6"
+            android:layout_marginTop="@dimen/default_dp_4_6"
+            android:layout_marginBottom="@dimen/default_dp_4_6"
+            android:padding="@dimen/default_dp_5_2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_baseline_add_circle" />
+
+        <ImageView
+            android:id="@+id/iv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_dp_4_6"
+            android:layout_marginBottom="@dimen/default_dp_4_6"
+            android:padding="@dimen/default_dp_5_2"
+            app:layout_constraintEnd_toStartOf="@+id/iv_add_product"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_baseline_cancel_24" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
+        android:background="@color/white"
+        android:layout_marginTop="56dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:descendantFocusability="beforeDescendants">
-
-            <ImageView
-                android:id="@+id/iv_close"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/default_dp_4_6"
-                android:layout_marginTop="@dimen/default_dp_4_6"
-                android:padding="@dimen/default_dp_5_2"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_menu_left" />
-
-            <ImageView
-                android:id="@+id/iv_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:padding="@dimen/default_dp_5_2"
-                app:layout_constraintEnd_toStartOf="@+id/iv_add_product"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_cancel_24" />
-
-            <ImageView
-                android:id="@+id/iv_add_product"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:padding="@dimen/default_dp_5_2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_add_circle" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/ly_profile_area"
@@ -108,7 +132,7 @@
                 android:layout_height="match_parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/iv_close"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:visibility="gone">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -168,7 +192,6 @@
                 app:layout_constraintEnd_toEndOf="@id/iv_menu_profile_banner"
                 app:layout_constraintTop_toTopOf="@id/iv_menu_profile_banner" />
 
-            <!-- Entrega del pedido -->
             <TextView
                 android:id="@+id/tv_menu_account_agora"
                 style="@style/text_headline_s.black1"
@@ -191,7 +214,6 @@
                 android:layout_height="match_parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_account_agora" />
 
-            <!-- Total calculado automáticamente -->
             <TextView
                 android:id="@+id/tv_menu_amount"
                 style="@style/text_headline_s.black1"
@@ -222,7 +244,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/recycler_deliver" />
 
-            <!-- Recibí: monto cobrado al cliente -->
             <TextView
                 android:id="@+id/tv_menu_cobro"
                 style="@style/text_headline_s.black1"
@@ -256,7 +277,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_amount" />
 
-            <!-- Responsable: DNI de quien recibe -->
             <TextView
                 android:id="@+id/tv_person_doc"
                 style="@style/text_headline_s.black1"
@@ -290,13 +310,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_menu_cobro" />
 
-            <!--
-                Bidones vacíos devueltos.
-                Decisión: Spinner (dropdown) en lugar de EditText libre porque
-                el repartidor solo puede devolver un número discreto de bidones
-                y el dropdown elimina errores de tipeo en campo.
-                El rango 0-20 cubre casos reales de reparto de agua.
-            -->
             <TextView
                 android:id="@+id/tv_bidones_vacios"
                 style="@style/text_headline_s.black1"
@@ -324,8 +337,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_person_doc" />
 
-
-            <!-- Observaciones del repartidor — texto libre -->
             <TextView
                 android:id="@+id/tv_label_observaciones"
                 style="@style/text_headline_s.black1"

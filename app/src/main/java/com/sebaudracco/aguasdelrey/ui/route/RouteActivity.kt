@@ -108,9 +108,14 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
                     ApiService.post(applicationContext, "/api/ausencia", body)
                 }
 
-                // Remover la parada de la lista — visualmente procesada
-                tasks.removeAt(adapterPosition)
-                adapter.notifyItemRemoved(adapterPosition)
+                // Buscar por idPedido en lugar de usar adapterPosition directamente
+                // — la posición puede haber cambiado si se eliminaron ítems previos
+                val idx = tasks.indexOfFirst { it.idPedido == scheduleTask.idPedido }
+                if (idx >= 0) {
+                    tasks.removeAt(idx)
+                    adapter.notifyItemRemoved(idx)
+                }
+
                 Toast.makeText(
                     this@RouteActivity,
                     "Ausencia registrada para ${scheduleTask.clientDescription}",
