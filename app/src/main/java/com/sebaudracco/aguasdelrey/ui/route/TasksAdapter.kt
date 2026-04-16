@@ -58,9 +58,7 @@ class TasksAdapter(var scheduleTask: MutableList<ScheduleTask>) :
                 )
             }
             ESTADO_CANCELADO -> {
-                holder.tvEstado.setTextColor(
-                    ContextCompat.getColor(holder.itemView.context, R.color.design_default_color_error)
-                )
+                holder.tvEstado.setTextColor(Color.RED)
             }
             else -> { // Pendiente / En ruta
                 holder.tvEstado.setTextColor(Color.GRAY)
