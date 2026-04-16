@@ -42,13 +42,11 @@ object DataRepository {
                 startTime          = "",
                 progressive        = false,
                 lunch              = false,
-                // ── Campos nuevos ────────────────────────────────────────────
-                // Decisión: usamos optInt() en lugar de getInt() para que si
-                // por algún motivo el campo no viene en la respuesta, el valor
-                // quede en 0 en vez de lanzar una excepción que rompa toda la
-                // carga de rutas. Fail-safe sobre fail-fast aquí porque es UI.
                 idPedido           = p.optInt("id_pedido", 0),
-                idCliente          = p.optInt("id_cliente", 0)
+                idCliente          = p.optInt("id_cliente", 0),
+                // Nuevos campos de estado
+                idEstado           = p.optInt("id_estado", 1),
+                estadoNombre       = p.optString("estado_nombre", "Pendiente")
             ))
         }
         return paradas
