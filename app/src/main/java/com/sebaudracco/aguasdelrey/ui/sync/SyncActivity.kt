@@ -41,8 +41,10 @@ class SyncActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        // El FAB permite reintentar la sync manualmente
         binding.fab.setOnClickListener { ejecutarSync() }
 
+        // Sync automática al entrar (solo una vez)
         ejecutarSync()
     }
 
@@ -69,11 +71,8 @@ class SyncActivity : AppCompatActivity() {
 
                 /*
                  * Decisión de navegación:
-                 * En lugar de ir directo a SelectRutaActivity, navegamos a FirstFragment
-                 * que muestra el resultado de la sync con un botón "Continuar" +
-                 * auto-avance de 3 segundos.
-                 * Esto da al repartidor la oportunidad de leer qué rutas se sincronizaron
-                 * sin forzarlo a leerlo si está apurado.
+                 * Navegamos a FirstFragment que muestra el resultado de la sync
+                 * con un botón "Continuar" + auto-avance de 3 segundos.
                  */
                 setResult(Activity.RESULT_OK)
                 val navController = findNavController(R.id.nav_host_fragment_content_sync)
@@ -83,13 +82,24 @@ class SyncActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 ocultarLoadingDialog()
+
+                // Mensaje amigable según el tipo de error, sin exponer detalles técnicos
+                val mensajeAmigable = when {
+                    e.message?.contains("Unable to resolve host", ignoreCase = true) == true ||
+                            e.message?.contains("failed to connect", ignoreCase = true) == true ->
+                        "No hay conexión a internet. Verificá tu red e intentá nuevamente."
+                    e.message?.contains("timeout", ignoreCase = true) == true ->
+                        "El servidor tardó demasiado en responder. Intentá nuevamente."
+                    e.message?.contains("401", ignoreCase = true) ||
+                            e.message?.contains("403", ignoreCase = true) ->
+                        "Tu sesión expiró. Cerrá la app y volvé a ingresar."
+                    else ->
+                        "No se pudieron obtener las rutas. Verificá tu conexión e intentá nuevamente."
+                }
+
                 AlertDialog.Builder(this@SyncActivity)
                     .setTitle("Error de sincronización")
-                    .setMessage(
-                        "No se pudieron obtener las rutas.\n\n" +
-                                "Verificá tu conexión a internet e intentá nuevamente.\n\n" +
-                                "Detalle: ${e.message}"
-                    )
+                    .setMessage(mensajeAmigable)
                     .setCancelable(false)
                     .setPositiveButton("Reintentar") { _, _ -> ejecutarSync() }
                     .setNegativeButton("Cancelar")   { d, _ -> d.dismiss() }
