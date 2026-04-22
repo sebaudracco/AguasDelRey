@@ -90,8 +90,8 @@ class SyncActivity : AppCompatActivity() {
                         "No hay conexión a internet. Verificá tu red e intentá nuevamente."
                     e.message?.contains("timeout", ignoreCase = true) == true ->
                         "El servidor tardó demasiado en responder. Intentá nuevamente."
-                    e.message?.contains("401", ignoreCase = true) ||
-                            e.message?.contains("403", ignoreCase = true) ->
+                    e.message?.contains("401", ignoreCase = true) == true ||
+                            e.message?.contains("403", ignoreCase = true) == true ->
                         "Tu sesión expiró. Cerrá la app y volvé a ingresar."
                     else ->
                         "No se pudieron obtener las rutas. Verificá tu conexión e intentá nuevamente."
