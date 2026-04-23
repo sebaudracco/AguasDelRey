@@ -7,33 +7,32 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.databinding.FragmentFirstBinding
 import com.sebaudracco.aguasdelrey.ui.home.ui.home.HomeFragment
 
 /**
- * FirstFragment — pantalla "Resultado de sincronización exitosa".
+ * FirstFragment — pantalla de resultado de sincronización.
  *
- * Muestra:
- * - Fecha y hora de la sync
- * - Rutas encontradas en texto plano
- * - Botón "Continuar" para ir a SelectRutaActivity
- * - Auto-avance en 3 segundos si el usuario no toca nada
+ * Muestra dos estados visuales según el argumento SYNC_OK:
+ *  - true  → fondo azul/teal,  ícono check,    "Sincronización exitosa"
+ *  - false → fondo amarillo,   ícono ⚠,        "Sin rutas disponibles"
  *
- * Decisión UX: el auto-avance evita que el repartidor quede bloqueado
- * si no lee la pantalla, pero el botón le da control si quiere leerla.
+ * En ambos casos muestra el botón "Continuar" con auto-avance de 3 segundos.
  */
 class FirstFragment : Fragment() {
+
+    companion object {
+        const val ARG_SYNC_OK = "SYNC_OK"
+    }
 
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
 
-    // Handler para el auto-avance — se cancela si el usuario toca el botón
     private val autoAvanceHandler = Handler(Looper.getMainLooper())
     private val autoAvanceRunnable = Runnable { navegarASelectRuta() }
-
-    private var segundosRestantes = 5
+    private var segundosRestantes = 3
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,38 +45,42 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Leer datos reales de la última sync
-        val prefs   = requireContext().getSharedPreferences(
-            HomeFragment.PREFS_SYNC, Context.MODE_PRIVATE
-        )
-        val fecha   = prefs.getString(HomeFragment.KEY_LAST_SYNC, null)
-        val resumen = prefs.getString(HomeFragment.KEY_RUTAS_RESUMEN, null)
+        val syncOk = arguments?.getBoolean(ARG_SYNC_OK, true) ?: true
 
-        if (fecha != null) {
-            binding.activationText1.text = "Sincronización exitosa"
-            binding.activationText2.text = "Última sync: $fecha"
-            binding.activationText3.text = resumen ?: "Sin rutas disponibles"
+        if (syncOk) {
+            mostrarEstadoExito()
         } else {
-            binding.activationText1.text = "Sin datos de sincronización"
-            binding.activationText2.text = "Realizá una sincronización para ver las rutas"
-            binding.activationText3.text = ""
+            mostrarEstadoAdvertencia()
         }
 
-        // Botón "Continuar" — cancela el auto-avance y navega inmediatamente
-        binding.buttonFirst.text = "Continuar"
         binding.buttonFirst.setOnClickListener {
             autoAvanceHandler.removeCallbacks(autoAvanceRunnable)
             navegarASelectRuta()
         }
 
-        // Iniciar countdown visual en el botón: "Continuar (3)"
         iniciarCountdown()
     }
 
-    /**
-     * Countdown visual en el texto del botón.
-     * Actualiza cada segundo y navega al llegar a 0.
-     */
+    private fun mostrarEstadoExito() {
+        val prefs   = requireContext().getSharedPreferences(HomeFragment.PREFS_SYNC, Context.MODE_PRIVATE)
+        val fecha   = prefs.getString(HomeFragment.KEY_LAST_SYNC, null)
+        val resumen = prefs.getString(HomeFragment.KEY_RUTAS_RESUMEN, null)
+
+        binding.syncRoot.setBackgroundResource(R.drawable.final_gradient_top_blue)
+        binding.activationIcon.setImageResource(R.drawable.ic_activation_ok)
+        binding.activationText1.text = "Sincronización exitosa"
+        binding.activationText2.text = if (fecha != null) "Última sync: $fecha" else ""
+        binding.activationText3.text = resumen ?: "Sin rutas disponibles"
+    }
+
+    private fun mostrarEstadoAdvertencia() {
+        binding.syncRoot.setBackgroundResource(R.drawable.final_gradient_top_warning)
+        binding.activationIcon.setImageResource(R.drawable.ic_activation_warning)
+        binding.activationText1.text = "Sin rutas disponibles"
+        binding.activationText2.text = "No hay rutas asignadas para hoy"
+        binding.activationText3.text = "Podés continuar de todas formas\no reintentar más tarde"
+    }
+
     private fun iniciarCountdown() {
         segundosRestantes = 3
         actualizarTextoContinuar()
@@ -89,7 +92,6 @@ class FirstFragment : Fragment() {
                     actualizarTextoContinuar()
                     autoAvanceHandler.postDelayed(this, 1000)
                 } else {
-                    // Llegó a 0 → ejecutar auto-avance
                     autoAvanceHandler.post(autoAvanceRunnable)
                 }
             }
@@ -106,7 +108,6 @@ class FirstFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // Cancelar cualquier handler pendiente al salir del fragment
         autoAvanceHandler.removeCallbacksAndMessages(null)
         super.onDestroyView()
         _binding = null

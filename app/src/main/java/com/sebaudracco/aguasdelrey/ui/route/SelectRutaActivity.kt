@@ -65,9 +65,10 @@ class SelectRutaActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
+                // Mensaje amigable — no exponemos e.message al usuario
                 Toast.makeText(
                     this@SelectRutaActivity,
-                    "Error al cargar rutas: ${e.message}",
+                    "No se pudieron cargar las rutas. Verificá tu conexión e intentá nuevamente.",
                     Toast.LENGTH_LONG
                 ).show()
             }

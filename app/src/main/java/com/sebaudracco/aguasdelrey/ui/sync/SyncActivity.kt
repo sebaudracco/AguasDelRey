@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -68,43 +69,30 @@ class SyncActivity : AppCompatActivity() {
                     .apply()
 
                 ocultarLoadingDialog()
-
-                /*
-                 * Decisión de navegación:
-                 * Navegamos a FirstFragment que muestra el resultado de la sync
-                 * con un botón "Continuar" + auto-avance de 3 segundos.
-                 */
                 setResult(Activity.RESULT_OK)
-                val navController = findNavController(R.id.nav_host_fragment_content_sync)
-                if (navController.currentDestination?.id != R.id.FirstFragment) {
-                    navController.navigate(R.id.FirstFragment)
-                }
+                navegarAResultado(syncOk = true)
 
             } catch (e: Exception) {
                 ocultarLoadingDialog()
-
-                // Mensaje amigable según el tipo de error, sin exponer detalles técnicos
-                val mensajeAmigable = when {
-                    e.message?.contains("Unable to resolve host", ignoreCase = true) == true ||
-                            e.message?.contains("failed to connect", ignoreCase = true) == true ->
-                        "No hay conexión a internet. Verificá tu red e intentá nuevamente."
-                    e.message?.contains("timeout", ignoreCase = true) == true ->
-                        "El servidor tardó demasiado en responder. Intentá nuevamente."
-                    e.message?.contains("401", ignoreCase = true) == true ||
-                            e.message?.contains("403", ignoreCase = true) == true ->
-                        "Tu sesión expiró. Cerrá la app y volvé a ingresar."
-                    else ->
-                        "No se pudieron obtener las rutas. Verificá tu conexión e intentá nuevamente."
-                }
-
-                AlertDialog.Builder(this@SyncActivity)
-                    .setTitle("Error de sincronización")
-                    .setMessage(mensajeAmigable)
-                    .setCancelable(false)
-                    .setPositiveButton("Reintentar") { _, _ -> ejecutarSync() }
-                    .setNegativeButton("Cancelar")   { d, _ -> d.dismiss() }
-                    .create().show()
+                // Navegamos a la pantalla de resultado con estado de advertencia.
+                // No mostramos ningún error técnico al usuario.
+                navegarAResultado(syncOk = false)
             }
+        }
+    }
+
+    /**
+     * Navega a FirstFragment pasando el estado de la sync como argumento.
+     * syncOk = true  → pantalla azul/exitosa  (fondo teal,    ícono check)
+     * syncOk = false → pantalla amarilla/alerta (fondo amber, ícono ⚠)
+     */
+    private fun navegarAResultado(syncOk: Boolean) {
+        val navController = findNavController(R.id.nav_host_fragment_content_sync)
+        if (navController.currentDestination?.id != R.id.FirstFragment) {
+            navController.navigate(
+                R.id.FirstFragment,
+                bundleOf(FirstFragment.ARG_SYNC_OK to syncOk)
+            )
         }
     }
 
