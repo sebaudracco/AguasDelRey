@@ -14,10 +14,6 @@ import com.sebaudracco.aguasdelrey.R
 import com.sebaudracco.aguasdelrey.data.model.RutaReparto
 import com.sebaudracco.aguasdelrey.databinding.ActivitySelectRutaBinding
 import com.sebaudracco.aguasdelrey.data.DataRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SelectRutaActivity : AppCompatActivity() {
 
@@ -35,42 +31,27 @@ class SelectRutaActivity : AppCompatActivity() {
     }
 
     private fun cargarRutas() {
-        binding.progressBar.visibility   = View.VISIBLE
+        binding.progressBar.visibility   = View.GONE
         binding.recyclerRutas.visibility = View.GONE
 
-        MainScope().launch {
-            try {
-                val rutas = withContext(Dispatchers.IO) {
-                    DataRepository.fetchRutas(applicationContext)
-                }
+        // Usamos el caché que llenó SyncActivity — no volvemos a llamar a la API.
+        // Esto evita una segunda llamada innecesaria y el error de conversión de tipo
+        // que aparecía cuando la respuesta del servidor no era JSON puro.
+        val rutas = DataRepository.getCache()
 
-                DataRepository.setCache(rutas)
-                binding.progressBar.visibility = View.GONE
-
-                if (rutas.isEmpty()) {
-                    Toast.makeText(
-                        this@SelectRutaActivity,
-                        "No tenés rutas asignadas para hoy.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    binding.recyclerRutas.visibility = View.VISIBLE
-                    binding.recyclerRutas.layoutManager = LinearLayoutManager(this@SelectRutaActivity)
-                    binding.recyclerRutas.adapter = RutaAdapter(rutas) { ruta ->
-                        val intent = Intent(this@SelectRutaActivity, RouteActivity::class.java)
-                        intent.putExtra("RUTA_ID", ruta.id)
-                        startActivity(intent)
-                    }
-                }
-
-            } catch (e: Exception) {
-                binding.progressBar.visibility = View.GONE
-                // Mensaje amigable — no exponemos e.message al usuario
-                Toast.makeText(
-                    this@SelectRutaActivity,
-                    "No se pudieron cargar las rutas. Verificá tu conexión e intentá nuevamente.",
-                    Toast.LENGTH_LONG
-                ).show()
+        if (rutas.isEmpty()) {
+            Toast.makeText(
+                this,
+                "No tenés rutas asignadas para hoy.",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            binding.recyclerRutas.visibility = View.VISIBLE
+            binding.recyclerRutas.layoutManager = LinearLayoutManager(this)
+            binding.recyclerRutas.adapter = RutaAdapter(rutas) { ruta ->
+                val intent = Intent(this, RouteActivity::class.java)
+                intent.putExtra("RUTA_ID", ruta.id)
+                startActivity(intent)
             }
         }
     }
@@ -101,3 +82,4 @@ class SelectRutaActivity : AppCompatActivity() {
         override fun getItemCount() = rutas.size
     }
 }
+

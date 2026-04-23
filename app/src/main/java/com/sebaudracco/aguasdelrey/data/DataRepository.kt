@@ -44,7 +44,6 @@ object DataRepository {
                 lunch              = false,
                 idPedido           = p.optInt("id_pedido", 0),
                 idCliente          = p.optInt("id_cliente", 0),
-                // Nuevos campos de estado
                 idEstado           = p.optInt("id_estado", 1),
                 estadoNombre       = p.optString("estado_nombre", "Pendiente")
             ))
@@ -56,5 +55,10 @@ object DataRepository {
 
     fun setCache(rutas: List<RutaReparto>) { rutasCache = rutas }
 
+    // Devuelve la lista completa cacheada — usada por SelectRutaActivity
+    // para evitar una segunda llamada a la API después de la sync.
+    fun getCache(): List<RutaReparto> = rutasCache
+
     fun getRutaById(id: String): RutaReparto? = rutasCache.find { it.id == id }
 }
+

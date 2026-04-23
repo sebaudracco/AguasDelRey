@@ -42,10 +42,7 @@ class SyncActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // El FAB permite reintentar la sync manualmente
         binding.fab.setOnClickListener { ejecutarSync() }
-
-        // Sync automática al entrar (solo una vez)
         ejecutarSync()
     }
 
@@ -70,21 +67,22 @@ class SyncActivity : AppCompatActivity() {
 
                 ocultarLoadingDialog()
                 setResult(Activity.RESULT_OK)
-                navegarAResultado(syncOk = true)
+
+                // API respondió OK pero sin rutas → pantalla de advertencia
+                // API respondió OK con rutas      → pantalla de éxito
+                navegarAResultado(syncOk = rutas.isNotEmpty())
 
             } catch (e: Exception) {
                 ocultarLoadingDialog()
-                // Navegamos a la pantalla de resultado con estado de advertencia.
-                // No mostramos ningún error técnico al usuario.
+                // Error de red o del servidor → pantalla de advertencia
                 navegarAResultado(syncOk = false)
             }
         }
     }
 
     /**
-     * Navega a FirstFragment pasando el estado de la sync como argumento.
-     * syncOk = true  → pantalla azul/exitosa  (fondo teal,    ícono check)
-     * syncOk = false → pantalla amarilla/alerta (fondo amber, ícono ⚠)
+     * syncOk = true  → fondo azul/teal,     ícono check → "Sincronización exitosa"
+     * syncOk = false → fondo amarillo/ámbar, ícono ⚠    → "Sin rutas disponibles"
      */
     private fun navegarAResultado(syncOk: Boolean) {
         val navController = findNavController(R.id.nav_host_fragment_content_sync)
