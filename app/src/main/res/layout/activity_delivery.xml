@@ -6,12 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.delivery.DeliveryActivity">
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
     <!--
         Barra superior fija — fuera del NestedScrollView.
         Decisión: los botones iv_close, iv_cancel, iv_add_product estaban
