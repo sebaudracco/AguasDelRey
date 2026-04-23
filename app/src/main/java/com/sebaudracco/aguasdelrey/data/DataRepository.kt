@@ -20,7 +20,8 @@ object DataRepository {
                 fecha      = r.getString("fecha"),
                 turno      = r.getString("turno"),
                 repartidor = r.getString("repartidor"),
-                paradas    = paradas
+                paradas    = paradas,
+                estado     = r.optInt("estado", 1)   // ← nuevo campo
             ))
         }
         return rutas
@@ -51,14 +52,37 @@ object DataRepository {
         return paradas
     }
 
-    private var rutasCache: List<RutaReparto> = emptyList()
+    private var rutasCache: MutableList<RutaReparto> = mutableListOf()
 
-    fun setCache(rutas: List<RutaReparto>) { rutasCache = rutas }
+    fun setCache(rutas: List<RutaReparto>) {
+        rutasCache = rutas.toMutableList()
+    }
 
-    // Devuelve la lista completa cacheada — usada por SelectRutaActivity
-    // para evitar una segunda llamada a la API después de la sync.
     fun getCache(): List<RutaReparto> = rutasCache
 
     fun getRutaById(id: String): RutaReparto? = rutasCache.find { it.id == id }
+
+    /**
+     * Elimina una parada del caché local después de que fue procesada
+     * (entregada, ausente, etc.) sin necesidad de re-sincronizar.
+     * Esto evita que el pedido reaparezca al volver a entrar a la ruta.
+     */
+    fun eliminarParadaDeCache(idRuta: String, idPedido: Int) {
+        val idx = rutasCache.indexOfFirst { it.id == idRuta }
+        if (idx < 0) return
+        val ruta = rutasCache[idx]
+        val nuevasParadas = ruta.paradas.filter { it.idPedido != idPedido }
+        rutasCache[idx] = ruta.copy(paradas = nuevasParadas)
+    }
+
+    /**
+     * Actualiza el estado de la ruta en el caché local después de
+     * que el repartidor la inicia o la completa desde RouteActivity.
+     */
+    fun actualizarEstadoRutaEnCache(idRuta: String, nuevoEstado: Int) {
+        val idx = rutasCache.indexOfFirst { it.id == idRuta }
+        if (idx < 0) return
+        rutasCache[idx] = rutasCache[idx].copy(estado = nuevoEstado)
+    }
 }
 

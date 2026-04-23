@@ -107,6 +107,7 @@ class DeliveryActivity : AppCompatActivity(), ProductAdapter.OnClickListener {
             if (exitosa) {
                 val intent = Intent()
                 intent.putExtra(Constants.EXTRA_USER_ID, viewModel.userId)
+                intent.putExtra(Constants.EXTRA_PEDIDO_ID, viewModel.idPedido)
                 setResult(Activity.RESULT_OK, intent)
                 finish()
             }

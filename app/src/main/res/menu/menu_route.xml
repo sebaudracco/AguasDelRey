@@ -1,10 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.sebaudracco.aguasdelrey.ui.RouteActivity">
+
+    <!--
+        Ítem de estado de ruta — visible siempre en la toolbar.
+        El título y el ícono se actualizan desde RouteActivity
+        según el estado actual de la ruta:
+          estado 1 (Planificada) → "Iniciar ruta"   / ícono play
+          estado 2 (En curso)    → "Completar ruta" / ícono check
+          estado 3+ (Completada) → oculto
+    -->
+    <item
+        android:id="@+id/action_estado_ruta"
+        android:title="Iniciar ruta"
+        android:icon="@drawable/ic_travel"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+
 </menu>
