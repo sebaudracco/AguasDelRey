@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="159dp"
+    android:height="159dp"
+    android:viewportWidth="159"
+    android:viewportHeight="159">
+    <!-- Triángulo de advertencia relleno blanco semitransparente -->
+    <path
+        android:pathData="M79.5,18 L8,141 L151,141 Z"
+        android:fillColor="#33ffffff"
+        android:strokeColor="#ffffff"
+        android:strokeWidth="6"/>
+    <!-- Signo de exclamación -->
+    <path
+        android:pathData="M75,72 L84,72 L81,112 L78,112 Z"
+        android:fillColor="#ffffff"/>
+    <path
+        android:pathData="M79.5,122 m-6,0 a6,6 0,1 1,12 0 a6,6 0,1 1,-12 0"
+        android:fillColor="#ffffff"/>
+</vector>
