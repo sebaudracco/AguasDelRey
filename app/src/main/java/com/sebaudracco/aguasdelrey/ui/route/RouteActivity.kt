@@ -79,8 +79,7 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
 
     /**
      * Cliente ausente — dialog de confirmación → POST /api/ausencia.
-     * Decisión: el pedido queda en estado Pendiente (id_estado = 1),
-     * solo se registra fecha_ausencia. No cambia el estado.
+     * El pedido pasa a estado 5 (No entregado) y se registra fecha_ausencia.
      */
     override fun onClienteAusente(scheduleTask: ScheduleTask, adapterPosition: Int) {
         AlertDialog.Builder(this)
@@ -88,7 +87,8 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
             .setMessage(
                 "¿Confirmar que el cliente ${scheduleTask.clientDescription} " +
                         "no se encontraba en el domicilio?\n\n" +
-                        "El pedido quedará pendiente y se registrará la fecha y hora del intento."
+                        "El pedido quedará marcado como No entregado y se registrará " +
+                        "la fecha y hora del intento."
             )
             .setCancelable(true)
             .setPositiveButton("Sí, confirmar") { _, _ ->
@@ -108,8 +108,8 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
                     ApiService.post(applicationContext, "/api/ausencia", body)
                 }
 
-                // Buscar por idPedido en lugar de usar adapterPosition directamente
-                // — la posición puede haber cambiado si se eliminaron ítems previos
+                // Buscar por idPedido — la posición puede haber cambiado si se
+                // eliminaron ítems previos durante la misma sesión de ruta
                 val idx = tasks.indexOfFirst { it.idPedido == scheduleTask.idPedido }
                 if (idx >= 0) {
                     tasks.removeAt(idx)
@@ -125,7 +125,7 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
             } catch (e: Exception) {
                 Toast.makeText(
                     this@RouteActivity,
-                    "Error al registrar ausencia: ${e.message}",
+                    "No se pudo registrar la ausencia. Verificá tu conexión e intentá nuevamente.",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -141,3 +141,4 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
         }
     }
 }
+
