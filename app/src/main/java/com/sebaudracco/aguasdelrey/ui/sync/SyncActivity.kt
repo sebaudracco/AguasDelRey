@@ -9,7 +9,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -31,6 +30,18 @@ class SyncActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivitySyncBinding
     private lateinit var loadingDialog: AlertDialog
+
+    /**
+     * Estado de la última sync — lo lee FirstFragment directamente desde la Activity.
+     * Solución al problema de pasar argumentos con Navigation Component cuando
+     * FirstFragment es el startDestination (el bundle no llega en ese caso).
+     *
+     * null  = sync aún no ejecutada (estado inicial)
+     * true  = sync exitosa con rutas
+     * false = sin rutas o error
+     */
+    var ultimoSyncOk: Boolean? = null
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,33 +76,34 @@ class SyncActivity : AppCompatActivity() {
                     .putString(HomeFragment.KEY_RUTAS_RESUMEN, resumen)
                     .apply()
 
-                ocultarLoadingDialog()
-                setResult(Activity.RESULT_OK)
-
-                // API respondió OK pero sin rutas → pantalla de advertencia
-                // API respondió OK con rutas      → pantalla de éxito
-                navegarAResultado(syncOk = rutas.isNotEmpty())
+                ultimoSyncOk = rutas.isNotEmpty()
 
             } catch (e: Exception) {
+                ultimoSyncOk = false
+
+            } finally {
                 ocultarLoadingDialog()
-                // Error de red o del servidor → pantalla de advertencia
-                navegarAResultado(syncOk = false)
+                setResult(Activity.RESULT_OK)
+                mostrarResultadoEnFragment()
             }
         }
     }
 
     /**
-     * syncOk = true  → fondo azul/teal,     ícono check → "Sincronización exitosa"
-     * syncOk = false → fondo amarillo/ámbar, ícono ⚠    → "Sin rutas disponibles"
+     * En lugar de navegar a FirstFragment (que ya ES el startDestination y no
+     * acepta el bundle), le avisamos directamente al fragment que actualice su UI.
+     * El fragment se obtiene por tag del NavHostFragment.
      */
-    private fun navegarAResultado(syncOk: Boolean) {
-        val navController = findNavController(R.id.nav_host_fragment_content_sync)
-        if (navController.currentDestination?.id != R.id.FirstFragment) {
-            navController.navigate(
-                R.id.FirstFragment,
-                bundleOf(FirstFragment.ARG_SYNC_OK to syncOk)
-            )
-        }
+    private fun mostrarResultadoEnFragment() {
+        val navHost = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_content_sync)
+        val firstFragment = navHost
+            ?.childFragmentManager
+            ?.fragments
+            ?.filterIsInstance<FirstFragment>()
+            ?.firstOrNull()
+
+        firstFragment?.aplicarEstado(ultimoSyncOk == true)
     }
 
     fun navegarASelectRuta() {

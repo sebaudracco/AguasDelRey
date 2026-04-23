@@ -15,16 +15,18 @@ import com.sebaudracco.aguasdelrey.ui.home.ui.home.HomeFragment
 /**
  * FirstFragment — pantalla de resultado de sincronización.
  *
- * Muestra dos estados visuales según el argumento SYNC_OK:
- *  - true  → fondo azul/teal,  ícono check,    "Sincronización exitosa"
- *  - false → fondo amarillo,   ícono ⚠,        "Sin rutas disponibles"
+ * El estado (éxito / advertencia) se recibe via aplicarEstado() llamado
+ * directamente desde SyncActivity una vez que termina la corrutina.
  *
- * En ambos casos muestra el botón "Continuar" con auto-avance de 3 segundos.
+ * Por qué no usamos argumentos del nav graph:
+ * FirstFragment es el startDestination, entonces cuando SyncActivity llama
+ * navigate(R.id.FirstFragment, bundle), la condición currentDestination == FirstFragment
+ * es true desde el arranque y el navigate (con bundle) nunca se ejecuta.
  */
 class FirstFragment : Fragment() {
 
     companion object {
-        const val ARG_SYNC_OK = "SYNC_OK"
+        const val ARG_SYNC_OK = "SYNC_OK" // se mantiene por compatibilidad
     }
 
     private var _binding: FragmentFirstBinding? = null
@@ -33,6 +35,9 @@ class FirstFragment : Fragment() {
     private val autoAvanceHandler = Handler(Looper.getMainLooper())
     private val autoAvanceRunnable = Runnable { navegarASelectRuta() }
     private var segundosRestantes = 3
+
+    // Estado pendiente de aplicar si la sync termina antes de que la vista esté lista
+    private var estadoPendiente: Boolean? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,17 +50,33 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val syncOk = arguments?.getBoolean(ARG_SYNC_OK, true) ?: true
+        // Si SyncActivity ya terminó antes de que la vista estuviera lista,
+        // aplicamos el estado que quedó pendiente
+        estadoPendiente?.let { aplicarEstado(it) }
+
+        binding.buttonFirst.setOnClickListener {
+            autoAvanceHandler.removeCallbacks(autoAvanceRunnable)
+            navegarASelectRuta()
+        }
+    }
+
+    /**
+     * Llamado por SyncActivity cuando termina la corrutina de sync.
+     * Si la vista todavía no está lista, guarda el estado para aplicarlo en onViewCreated.
+     */
+    fun aplicarEstado(syncOk: Boolean) {
+        if (_binding == null) {
+            // Vista no lista todavía — guardar para aplicar cuando esté
+            estadoPendiente = syncOk
+            return
+        }
+
+        estadoPendiente = null
 
         if (syncOk) {
             mostrarEstadoExito()
         } else {
             mostrarEstadoAdvertencia()
-        }
-
-        binding.buttonFirst.setOnClickListener {
-            autoAvanceHandler.removeCallbacks(autoAvanceRunnable)
-            navegarASelectRuta()
         }
 
         iniciarCountdown()
@@ -82,6 +103,8 @@ class FirstFragment : Fragment() {
     }
 
     private fun iniciarCountdown() {
+        // Cancela cualquier countdown previo antes de iniciar uno nuevo
+        autoAvanceHandler.removeCallbacksAndMessages(null)
         segundosRestantes = 3
         actualizarTextoContinuar()
 
