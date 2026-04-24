@@ -35,7 +35,6 @@ class LoginRepository(val dataSource: LoginDataSource, private val context: Cont
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {
         this.user = loggedInUser
-        // Guardar token y datos del empleado en SharedPreferences
         prefs.edit().apply {
             putString("jwt_token",       loggedInUser.token)
             putString("empleado_nombre", loggedInUser.displayName)
@@ -47,21 +46,22 @@ class LoginRepository(val dataSource: LoginDataSource, private val context: Cont
     }
 
     companion object {
-        // Métodos estáticos para acceder al token desde cualquier parte de la app
-        fun getToken(context: Context): String? {
-            return context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
+        fun getToken(context: Context): String? =
+            context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
                 .getString("jwt_token", null)
-        }
 
-        fun getNombre(context: Context): String? {
-            return context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
+        fun getNombre(context: Context): String? =
+            context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
                 .getString("empleado_nombre", null)
-        }
 
-        fun getRol(context: Context): Int {
-            return context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
+        // Agregado para mostrar el email en el header del drawer
+        fun getEmail(context: Context): String? =
+            context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
+                .getString("empleado_email", null)
+
+        fun getRol(context: Context): Int =
+            context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)
                 .getInt("empleado_rol", 0)
-        }
 
         fun clearSession(context: Context) {
             context.getSharedPreferences("aguadelrey_prefs", Context.MODE_PRIVATE)

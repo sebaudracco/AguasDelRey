@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Drawer lateral:
+    - nav_home    (Sincronizar ruta) → se mantiene
+    - nav_gallery (Reparto)          → se mantiene, HomeActivity lo redirige a SelectRutaActivity
+    - nav_slideshow (Mostrar ruta)   → oculto con android:visible="false"
+-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
@@ -18,6 +24,7 @@
             android:id="@+id/nav_slideshow"
             style="@style/text_link_m"
             android:icon="@drawable/ic_gps"
-            android:title="@string/menu_slideshow" />
+            android:title="@string/menu_slideshow"
+            android:visible="false" />
     </group>
 </menu>
