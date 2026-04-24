@@ -17,7 +17,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Configuración</string>
     <string name="menu_home">Sincronizar ruta</string>
-    <string name="menu_gallery">Reparto</string>
+    <string name="menu_gallery">Seleccionar Ruta</string>
     <string name="menu_slideshow">Mostrar ruta</string>
     <string name="dialog_receiving_data_title">Aguarde un momento por favor</string>
     <string name="title_activity_maps">Map</string>

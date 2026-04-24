@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+        CircleMenu — 2 botones:
+          índice 0 → Reparto     (ic_travel,        teal_700)
+          índice 1 → Sincronizar (ic_cloud_download, teal_200)
+        Botón GPS (ic_gps) eliminado — MapsActivity no forma parte del flujo actual.
+        HomeFragment.kt maneja índices 0 y 1 en el when — el índice 2 ya no existe.
+    -->
     <array name="icons">
         <item>@drawable/ic_travel</item>
         <item>@drawable/ic_cloud_download</item>
-        <item>@drawable/ic_gps</item>
     </array>
     <array name="colors">
         <item>@color/teal_700</item>
         <item>@color/teal_200</item>
-        <item>@color/action_color</item>
     </array>
 </resources>
