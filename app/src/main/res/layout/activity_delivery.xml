@@ -21,8 +21,7 @@
         android:id="@+id/toolbar_actions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:elevation="4dp">
+        android:background="@color/white">
 
         <ImageView
             android:id="@+id/iv_close"
@@ -63,12 +62,6 @@
             app:srcCompat="@drawable/ic_baseline_cancel_24" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Divisor sutil entre toolbar y contenido -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/background_light_2" />
 
     <!-- Contenido scrolleable — ocupa el espacio restante con layout_weight -->
     <androidx.core.widget.NestedScrollView
