@@ -56,11 +56,11 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
         val ruta = DataRepository.getRutaById(rutaId)
 
         if (ruta != null) {
-            binding.toolbarLayout.title = ruta.nombre
+            supportActionBar?.title = ruta.nombre
             tasks = ruta.paradas.toMutableList()
             estadoRuta = ruta.estado
         } else {
-            binding.toolbarLayout.title = "Ruta de Reparto"
+            supportActionBar?.title = "Ruta de Reparto"
             tasks = mutableListOf()
         }
 
@@ -287,4 +287,5 @@ class RouteActivity : AppCompatActivity(), TasksAdapter.OnClickListener {
         }
     }
 }
+
 

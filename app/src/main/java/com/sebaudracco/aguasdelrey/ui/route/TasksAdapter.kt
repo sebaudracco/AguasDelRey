@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.sebaudracco.aguasdelrey.R
@@ -106,8 +105,7 @@ class TasksAdapter(var scheduleTask: MutableList<ScheduleTask>) :
 
     override fun getItemCount(): Int = scheduleTask.size
 
-    inner class ViewHolder(mView: View) : RecyclerView.ViewHolder(mView) {
-        val container:    ConstraintLayout = mView.findViewById(R.id.route_client)
+    class ViewHolder(mView: View) : RecyclerView.ViewHolder(mView) {
         val name:         TextView         = mView.findViewById(R.id.tv_client_value)
         val address:      TextView         = mView.findViewById(R.id.tv_adress_value)
         val count:        TextView         = mView.findViewById(R.id.tv_count)
